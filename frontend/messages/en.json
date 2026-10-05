@@ -109,5 +109,261 @@
   "footer": {
     "disclaimer": "Trust levels are based on available verified and observed evidence and can change over time.",
     "rights": "© {year} Trustora"
+  },
+  "common": {
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "back": "Back",
+    "optional": "optional",
+    "uploading": "Uploading…",
+    "view": "View",
+    "english": "English",
+    "sinhala": "සිංහල",
+    "loadFailed": "This information could not be loaded. Please try again.",
+    "confirmRemove": "Are you sure? This cannot be undone."
+  },
+  "apiErrors": {
+    "generic": "Something went wrong. Please try again.",
+    "network_error": "Could not reach Trustora. Check your connection and try again.",
+    "validation_error": "Some details are invalid. Please check the form.",
+    "rate_limited": "Too many requests. Please wait a moment and try again.",
+    "slug_taken": "That store address is already taken. Try another.",
+    "sme_exists": "This account already has a registered business.",
+    "sme_suspended": "This business account is suspended.",
+    "verification_pending": "A verification request is already awaiting review.",
+    "already_verified": "This business is already verified.",
+    "already_decided": "This request has already been decided.",
+    "social_exists": "This account is already linked.",
+    "limit_reached": "You have reached the limit for this item.",
+    "file_too_large": "The file is too large.",
+    "unsupported_file_type": "This file type is not accepted. Use JPG, PNG, WEBP or PDF as allowed.",
+    "extension_mismatch": "The file name extension does not match the file’s contents.",
+    "empty_file": "The file is empty.",
+    "document_count": "Attach between 1 and 5 documents.",
+    "unknown_category": "Choose a valid category.",
+    "storage_unavailable": "File storage is temporarily unavailable. Please try again.",
+    "storage_not_configured": "File uploads are not configured on this server.",
+    "forbidden": "You do not have permission to do this.",
+    "not_found": "This item could not be found."
+  },
+  "verificationStatus": {
+    "UNVERIFIED": "Not verified",
+    "PENDING": "Verification in review",
+    "VERIFIED": "Verified business",
+    "REJECTED": "Verification not approved"
+  },
+  "authenticity": {
+    "VERIFIED": "Authenticity verified",
+    "PARTIALLY_VERIFIED": "Partially verified",
+    "UNVERIFIED": "Authenticity not verified",
+    "CONCERN": "Authenticity concern"
+  },
+  "provenance": {
+    "VERIFIED_FACT": "Verified fact",
+    "SELLER_CLAIM": "Seller-provided",
+    "CUSTOMER_ALLEGATION": "Customer allegation",
+    "PUBLIC_EVIDENCE": "Public evidence",
+    "AI_ANALYSIS": "AI analysis",
+    "PLATFORM_STATISTIC": "Platform statistic"
+  },
+  "reviewStatus": {
+    "PENDING": "Awaiting review",
+    "ACCEPTED": "Accepted",
+    "REJECTED": "Not accepted"
+  },
+  "platforms": {
+    "INSTAGRAM": "Instagram",
+    "FACEBOOK": "Facebook",
+    "TIKTOK": "TikTok",
+    "WHATSAPP": "WhatsApp"
+  },
+  "policies": {
+    "returns": "Returns",
+    "refunds": "Refunds",
+    "delivery": "Delivery"
+  },
+  "sme": {
+    "nav": {
+      "label": "Business navigation",
+      "dashboard": "Overview",
+      "store": "Store",
+      "products": "Products",
+      "verification": "Verification"
+    },
+    "onboarding": {
+      "title": "Register your business",
+      "body": "Create your Trustora store. You can add products, link your social accounts and apply for verification next.",
+      "name": "Business / store name",
+      "slug": "Store address",
+      "slugHint": "Lowercase letters, numbers and hyphens. Your store will be at /stores/{slug}. This cannot be changed later.",
+      "description": "Short description",
+      "contactPhone": "Business phone",
+      "contactEmail": "Business email",
+      "submit": "Create store"
+    },
+    "dashboard": {
+      "title": "Business overview",
+      "viewStore": "View public store",
+      "notPublished": "Your store is not public yet.",
+      "checklistTitle": "Build your Trust Passport",
+      "checklistBody": "Each step adds evidence customers can see.",
+      "steps": {
+        "logo": "Add your logo",
+        "policies": "Publish returns, refunds and delivery policies",
+        "social": "Link and confirm a social media account",
+        "verification": "Get your business verified",
+        "products": "Add your first product",
+        "publish": "Publish your store"
+      },
+      "activeProducts": "Active products",
+      "hiddenProducts": "Hidden products",
+      "verification": "Verification",
+      "linkedAccounts": "Confirmed social accounts"
+    },
+    "store": {
+      "title": "Store settings",
+      "profile": "Store profile",
+      "logo": "Logo",
+      "logoHint": "JPG, PNG or WEBP, up to 5 MB.",
+      "uploadLogo": "Upload logo",
+      "contact": "Contact details",
+      "contactHint": "Changing contact details after verification removes the “contact confirmed” mark until Trustora confirms them again.",
+      "contactConfirmed": "Contact confirmed by Trustora",
+      "policiesTitle": "Store policies",
+      "policiesHint": "Clear policies are a positive trust signal. Write them in one or both languages.",
+      "visibility": "Store visibility",
+      "published": "Published — customers can see your store",
+      "unpublished": "Draft — only you can see your store",
+      "publish": "Publish store",
+      "unpublish": "Unpublish store"
+    },
+    "social": {
+      "title": "Social media accounts",
+      "body": "Link the accounts where you sell. To confirm ownership, add your Trustora code to the account’s bio or about section. A Trustora administrator will check it.",
+      "platform": "Platform",
+      "handle": "Account name / handle",
+      "url": "Profile link",
+      "add": "Link account",
+      "code": "Your code",
+      "pending": "Awaiting confirmation",
+      "confirmed": "Ownership confirmed",
+      "empty": "No social accounts linked yet."
+    },
+    "verification": {
+      "title": "Business verification",
+      "body": "Upload your business registration (BR) certificate and any supporting document. Documents are stored privately and only Trustora administrators can view them.",
+      "regNumber": "Business registration number",
+      "registeredName": "Registered business name",
+      "documents": "Documents",
+      "documentsHint": "1–5 files. PDF, JPG, PNG or WEBP, up to 10 MB each.",
+      "submit": "Submit for verification",
+      "pendingNotice": "Your verification request is being reviewed.",
+      "verifiedNotice": "Your business is verified. Customers see the verified badge on your store.",
+      "rejectedNotice": "Your last request was not approved. Review the note below and submit again.",
+      "history": "Submission history",
+      "submittedOn": "Submitted {date}",
+      "note": "Reviewer note",
+      "decision": {
+        "SUBMITTED": "In review",
+        "APPROVED": "Approved",
+        "REJECTED": "Not approved"
+      }
+    },
+    "products": {
+      "title": "Products",
+      "new": "Add product",
+      "empty": "You have not added any products yet.",
+      "edit": "Edit product",
+      "name": "Product name",
+      "description": "Description",
+      "category": "Category",
+      "chooseCategory": "Choose a category",
+      "price": "Price (LKR)",
+      "stock": "Stock",
+      "status": "Visibility",
+      "statusACTIVE": "Visible in store",
+      "statusHIDDEN": "Hidden",
+      "create": "Create product",
+      "removeProduct": "Remove product",
+      "images": "Images",
+      "imagesHint": "Up to 8 images. JPG, PNG or WEBP, up to 5 MB each.",
+      "addImage": "Add image",
+      "noImages": "No images yet.",
+      "evidenceTitle": "Authenticity evidence",
+      "evidenceBody": "Upload invoices, supplier or distributor documents, or authenticity certificates. Trustora reviews this evidence — uploading it does not mark a product as verified.",
+      "evidenceType": "Evidence type",
+      "evidenceTypePRODUCT_DOCUMENT": "Document (invoice, certificate, supplier letter)",
+      "evidenceTypePRODUCT_IMAGE": "Photo (packaging, batch/lot number, label)",
+      "evidenceDescription": "What does this show?",
+      "uploadEvidence": "Upload evidence",
+      "noEvidence": "No evidence uploaded yet.",
+      "inStock": "{count} in stock",
+      "outOfStock": "Out of stock"
+    }
+  },
+  "store": {
+    "verified": "Verified business",
+    "verifiedOn": "Verified {date}",
+    "notVerified": "Not verified by Trustora",
+    "notVerifiedHint": "This business has not completed Trustora verification. Check its evidence carefully before buying.",
+    "pending": "Verification in progress",
+    "memberSince": "On Trustora since {date}",
+    "contact": "Contact",
+    "contactConfirmed": "Confirmed by Trustora",
+    "socialTitle": "Confirmed social accounts",
+    "policiesTitle": "Store policies",
+    "noPolicies": "This store has not published its policies.",
+    "productsTitle": "Products",
+    "noProducts": "No products are listed yet.",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "fallbackLanguage": "Shown in the language provided by the seller.",
+    "trustPassportSoon": "The full Digital Trust Passport for this store is coming soon.",
+    "sellerProvided": "Provided by the seller"
+  },
+  "admin": {
+    "nav": {
+      "label": "Admin navigation",
+      "dashboard": "Overview",
+      "verifications": "SME verification"
+    },
+    "dashboard": {
+      "pendingVerifications": "Verification requests awaiting review",
+      "pendingSocial": "Social accounts awaiting confirmation",
+      "review": "Review"
+    },
+    "verifications": {
+      "title": "SME verification",
+      "queueEmpty": "No requests in this list.",
+      "filterSUBMITTED": "Awaiting review",
+      "filterAPPROVED": "Approved",
+      "filterREJECTED": "Not approved",
+      "submitted": "Submitted",
+      "regNumber": "Registration no.",
+      "registeredName": "Registered name",
+      "storeName": "Store name",
+      "documents": "Documents",
+      "openDocument": "Open document",
+      "linkExpires": "Links expire after 5 minutes.",
+      "history": "Previous requests",
+      "decisionTitle": "Decision",
+      "decisionHint": "Approve only if the registration details match an official record. Your decision and note are recorded in the audit log.",
+      "contactVerified": "I confirmed the business contact details",
+      "note": "Note to the business",
+      "noteRequired": "Required when not approving.",
+      "approve": "Approve verification",
+      "reject": "Do not approve",
+      "decided": "Decided on {date}"
+    },
+    "social": {
+      "title": "Social account confirmation",
+      "body": "Open the profile and check that the code appears in the bio or about section.",
+      "confirm": "Confirm ownership",
+      "revoke": "Revoke",
+      "empty": "No social accounts awaiting confirmation."
+    }
   }
 }

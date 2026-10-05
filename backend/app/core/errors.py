@@ -42,6 +42,35 @@ class NotFoundError(AppError):
     code = "not_found"
 
 
+class ConflictError(AppError):
+    status_code = 409
+    code = "conflict"
+
+
+class PayloadTooLargeError(AppError):
+    status_code = 413
+    code = "file_too_large"
+
+
+class UnsupportedMediaTypeError(AppError):
+    status_code = 415
+    code = "unsupported_file_type"
+
+
+class ValidationAppError(AppError):
+    status_code = 422
+    code = "validation_error"
+
+
+def is_unique_violation(exc: BaseException) -> bool:
+    """True if a SQLAlchemy/asyncpg error is a Postgres unique violation (SQLSTATE 23505)."""
+    orig = getattr(exc, "orig", None)
+    return (
+        getattr(orig, "sqlstate", None) == "23505"
+        or getattr(getattr(orig, "__cause__", None), "sqlstate", None) == "23505"
+    )
+
+
 def _envelope(status_code: int, code: str, message: str, details: Any = None) -> JSONResponse:
     body: dict[str, Any] = {"code": code, "message": message}
     if details is not None:
@@ -55,6 +84,8 @@ _HTTP_CODES = {
     403: "forbidden",
     404: "not_found",
     405: "method_not_allowed",
+    409: "conflict",
+    413: "file_too_large",
     429: "rate_limited",
 }
 

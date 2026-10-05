@@ -5,6 +5,7 @@ Two kinds of transactions:
 * ``user_transaction`` — runs as Postgres role ``authenticated`` with the caller's JWT
   claims, so Supabase Row Level Security applies to every query (defence in depth on top
   of service-layer authorization).
+* ``anon_transaction`` — runs as Postgres role ``anon`` for public, signed-out reads.
 * ``system_transaction`` — runs as the connection's own (privileged) role. Only for
   trusted backend work: audit writes, trust recalculation, storage bookkeeping.
 """
@@ -50,6 +51,18 @@ class Database:
             )
             yield conn
 
+    @asynccontextmanager
+    async def anon_transaction(self) -> AsyncIterator[AsyncConnection]:
+        """Public (signed-out) reads: runs as Postgres role ``anon`` so public RLS policies apply."""
+        async with self.engine.begin() as conn:
+            await conn.execute(
+                text(
+                    "select set_config('request.jwt.claims', '', true), "
+                    "set_config('role', 'anon', true)"
+                )
+            )
+            yield conn
+
     @staticmethod
     @asynccontextmanager
     async def privileged(conn: AsyncConnection) -> AsyncIterator[AsyncConnection]:
@@ -60,11 +73,11 @@ class Database:
         """
         previous = (await conn.execute(text("select current_user"))).scalar_one()
         await conn.execute(text("set local role none"))
-        try:
-            yield conn
-        finally:
-            if previous == "authenticated":
-                await conn.execute(text("set local role authenticated"))
+        yield conn
+        # Only restored on success: after an error the transaction is aborted and the role is
+        # reset by the rollback anyway (running SQL here would mask the original error).
+        if previous in ("authenticated", "anon"):
+            await conn.execute(text(f"set local role {previous}"))
 
     @asynccontextmanager
     async def system_transaction(self) -> AsyncIterator[AsyncConnection]:

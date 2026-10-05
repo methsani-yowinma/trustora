@@ -45,12 +45,26 @@ metadata). Signup may request CUSTOMER or SME; ADMIN is assigned manually in the
 | Phase | Tables |
 | ----- | ------ |
 | 2 ✅ | `profiles`, `audit_logs` |
-| 3 | `smes` (incl. storefront fields), `sme_social_accounts`, `business_verifications`, `categories`, `products`, `product_images` |
-| 4 | `evidence`, `trust_scores`, `trust_score_history`, `trust_signals` |
+| 3 ✅ | `smes` (incl. storefront fields), `sme_social_accounts`, `business_verifications`, `evidence`, `categories`, `products`, `product_images` |
+| 4 | `trust_scores`, `trust_score_history`, `trust_signals` |
 | 5 | `orders`, `order_items`, `payments`, `deliveries` |
 | 6 | `reviews`, `complaints` |
 
 The Trust Passport is a composed view (`smes` + `trust_scores` + `trust_signals`), not a table.
+
+`evidence` moved from Phase 4 to Phase 3: verification documents and product authenticity
+files are evidence from the moment they are uploaded.
+
+## Phase 3 product decisions
+
+- A store is public once the SME publishes it, verified or not; unverified stores show a clear
+  "Not verified by Trustora" notice.
+- Contact details are confirmed by the admin during verification (no SMS/OTP in the MVP);
+  editing them afterwards clears the confirmation automatically (database trigger).
+- Removing a product is a soft delete so future orders keep their history.
+- Store addresses (slugs) are immutable after registration.
+- Uploaded product evidence is a pending *seller claim* and never changes authenticity status
+  by itself; admin review arrives with the Trust Engine in Phase 4.
 
 ## Trust Engine (Phase 4)
 
