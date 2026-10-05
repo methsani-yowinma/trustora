@@ -1,55 +1,106 @@
 # Trustora
 
-## Digital Trust Infrastructure for Social Commerce
+**Trust. Verify. Shop.** — Digital trust infrastructure for Sri Lankan social commerce.
 
-Trustora is a multilingual digital trust and social-commerce platform designed to help Sri Lankan SMEs establish verified digital identities and storefronts while helping customers make more informed purchasing decisions.
+Trustora helps customers answer *"Can I trust this business, this product, and this transaction?"*
+with evidence, and helps legitimate SMEs build a verified digital identity, store and reputation.
+Trust levels are always evidence-based and never claim a seller is "100% safe".
 
-## Core Concepts
+| Layer    | Stack                                                       |
+| -------- | ----------------------------------------------------------- |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, next-intl (`/en`, `/si`) |
+| Backend  | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy Core (asyncpg) |
+| Data     | Supabase — PostgreSQL + Row Level Security, Auth, Storage    |
+| AI       | Google Gemini (server-side only, from Phase 7)              |
 
-- Digital Trust Passport
-- Business Trust
-- Product Trust
-- Transaction Trust
-- Evidence-Based Trust Assessment
-- SME Digital Stores
-- Customer Reviews and Complaints
-- Gemini-powered Trustora AI
-- Sinhala and English support
-
-## Technology Stack
-
-### Frontend
-- Next.js
-- TypeScript
-- React
-- Tailwind CSS
-
-### Backend
-- Python
-- FastAPI
-- Pydantic
-
-### Database
-- PostgreSQL
-- Supabase
-
-### Authentication
-- Supabase Auth
-
-### AI
-- Google Gemini API
-
-## Project Structure
+Architecture: a **modular monolith** — see [docs/architecture/overview.md](docs/architecture/overview.md)
+and the decision records in [docs/decisions/](docs/decisions/).
 
 ```text
 trustora/
-├── frontend/
-├── backend/
-├── docs/
-│   ├── architecture/
-│   ├── database/
-│   ├── api/
-│   └── decisions/
-├── .env.example
-├── .gitignore
-└── README.md
+├── backend/            FastAPI app (app/<module>/{router,schemas,service}.py) + pytest suite
+├── frontend/           Next.js app (src/app/[locale]/…, messages/{en,si}.json) + Playwright
+├── supabase/migrations SQL migrations — the single source of truth for schema, RLS, triggers
+├── docs/               architecture, database, api, decisions (ADRs)
+└── postman/            API collection
+```
+
+## Development status
+
+| Phase | Scope | Status |
+| ----- | ----- | ------ |
+| 1 | Architecture | ✅ Approved |
+| 2 | Foundation: setup, DB, Supabase config, auth, roles, base UI, env | ✅ Implemented |
+| 3–10 | SME · Trust Engine · Commerce · Customer Trust · Gemini · Trustora AI · Security · Testing | Pending |
+
+## Prerequisites
+
+- Python 3.12, Node.js 20+ (tested with Node 24)
+- A Supabase project (free tier is fine)
+
+## 1. Supabase setup
+
+1. Create a project at <https://supabase.com>.
+2. **Apply the migrations** — either:
+   - SQL Editor → paste and run each file in `supabase/migrations/` in filename order, or
+   - `npx supabase login && npx supabase link --project-ref <ref> && npx supabase db push`
+3. **Auth → URL Configuration**
+   - Site URL: `http://localhost:3000`
+   - Redirect URLs: `http://localhost:3000/en/auth/callback`, `http://localhost:3000/si/auth/callback`
+4. **Bootstrap an admin.** Admin can never be chosen at signup. Sign up normally, then run
+   in the SQL Editor:
+
+   ```sql
+   update public.profiles set role = 'ADMIN'
+   where id = (select id from auth.users where email = 'you@example.com');
+   ```
+
+## 2. Backend
+
+```bash
+cd backend
+py -3.12 -m venv .venv            # macOS/Linux: python3.12 -m venv .venv
+.venv/Scripts/activate            # macOS/Linux: source .venv/bin/activate
+pip install -r requirements-dev.txt
+cp .env.example .env              # then fill in the values
+uvicorn app.main:create_app --factory --reload --port 8000
+```
+
+- `DATABASE_URL`: Supabase → **Connect** → *Session pooler* connection string.
+- `SUPABASE_JWT_SECRET`: only for projects still signing tokens with the legacy HS256 secret.
+  Projects using JWT signing keys are verified automatically through JWKS.
+- API docs (development only): <http://localhost:8000/docs>. Health: `GET /api/v1/health`.
+
+## 3. Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local        # fill in Supabase URL + anon key; API URL defaults to :8000
+npm run dev                       # http://localhost:3000 → redirects to /en
+```
+
+## Testing
+
+```bash
+# Backend: 53 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
+cd backend && pytest
+ruff check . && ruff format --check .
+
+# Frontend
+cd frontend
+npm run lint && npm run typecheck && npm run check:i18n
+npx playwright install chromium   # or use an installed browser: PW_CHANNEL=msedge
+npm run test:e2e                  # builds, starts on :3100, runs desktop + mobile smoke tests
+```
+
+A Postman collection is in [postman/](postman/).
+
+## Security notes
+
+- Secrets live only in `backend/.env` (never committed). The browser only ever receives
+  `NEXT_PUBLIC_*` values (Supabase URL, anon key, API URL).
+- Every API request is authorized in the service layer **and** runs inside a Postgres
+  transaction as role `authenticated` with the caller's JWT claims, so RLS also applies.
+- Anything granted to `authenticated` is reachable from the browser via Supabase's REST API;
+  migrations therefore revoke default grants and add only safe, RLS-protected privileges.
