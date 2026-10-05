@@ -15,6 +15,7 @@ import pgserver
 import uvicorn
 from sqlalchemy import text
 
+import app.main as main_module
 from app.core.config import Settings
 from app.core.db import Database, create_engine
 from app.main import create_app
@@ -92,6 +93,23 @@ SEED = [
             "p3": json.dumps({"en": "Hidden test product"}),
         },
     ),
+    # A second published store, for "one store per cart" behaviour.
+    (
+        "insert into auth.users (id, email, raw_user_meta_data) values "
+        "('00000000-0000-4000-8000-000000000003', 'spice@example.test', '{\"role\": \"SME\"}')",
+        {},
+    ),
+    (
+        "insert into public.smes (id, owner_id, slug, name, is_published) values "
+        "('10000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000003', "
+        "'matale-spice', 'Matale Spice Garden', true)",
+        {},
+    ),
+    (
+        "insert into public.products (sme_id, category_id, name_i18n, price_lkr, stock) values "
+        "('10000000-0000-4000-8000-000000000003', 5, cast(:name as jsonb), 850, 30)",
+        {"name": json.dumps({"en": "Ceylon cinnamon sticks"})},
+    ),
     (
         # Earlier trust history, so the passport can show a 30-day change and a chart.
         # The current score is computed by the real trust engine on first view.
@@ -133,8 +151,19 @@ def main() -> None:
         cors_origins="http://localhost:3100",
     )
     database = Database(create_engine(settings.async_database_url))
+    # Every e2e request comes from 127.0.0.1 (one client), so the per-client limit is raised here;
+    # the real limit is covered by backend tests.
+    main_module.DEFAULT_LIMIT = "100000/minute"
     app = create_app(settings, db=database, storage=PublicOnlyStorage())
-    uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
+    # As in production: trust X-Forwarded-For only from the frontend server's address.
+    uvicorn.run(
+        app,
+        host="127.0.0.1",
+        port=args.port,
+        log_level="warning",
+        proxy_headers=True,
+        forwarded_allow_ips="127.0.0.1",
+    )
 
 
 if __name__ == "__main__":

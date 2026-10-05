@@ -18,6 +18,7 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = use(params);
   setRequestLocale(locale as Locale);
   const t = useTranslations("home");
+  const tNav = useTranslations("nav");
 
   return (
     <div className="space-y-16 py-12 sm:py-20">
@@ -29,7 +30,10 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
         <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">{t("title")}</h1>
         <p className="text-lg text-ink-muted">{t("body")}</p>
         <div className="flex flex-wrap gap-3">
-          <Link href={{ pathname: "/signup", query: { type: "customer" } }} className={buttonClasses("primary")}>
+          <Link href="/discover" className={buttonClasses("primary")}>
+            {tNav("discover")}
+          </Link>
+          <Link href={{ pathname: "/signup", query: { type: "customer" } }} className={buttonClasses("secondary")}>
             {t("ctaCustomer")}
           </Link>
           <Link href={{ pathname: "/signup", query: { type: "sme" } }} className={buttonClasses("secondary")}>

@@ -18,11 +18,13 @@ type ApiOptions = {
   /** JSON-serialisable body, or FormData for file uploads. */
   body?: unknown;
   signal?: AbortSignal;
+  /** Extra request headers (server-side: the forwarded client IP). */
+  headers?: Record<string, string>;
 };
 
 /** Typed fetch against the FastAPI backend. Works in both server and client code. */
 export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: "application/json", ...options.headers };
   if (options.token) headers.Authorization = `Bearer ${options.token}`;
 
   let body: BodyInit | undefined;

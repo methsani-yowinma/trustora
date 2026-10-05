@@ -14,6 +14,8 @@ from app.core.middleware import RequestContextMiddleware
 from app.core.rate_limit import DEFAULT_LIMIT, rate_limit
 from app.core.security import TokenVerifier
 from app.core.storage import StorageClient, SupabaseStorage, UnconfiguredStorage
+from app.orders.router import router as orders_router
+from app.orders.router import sme_router as sme_orders_router
 from app.products.router import public_router as products_public_router
 from app.products.router import router as sme_products_router
 from app.smes.router import admin_router as smes_admin_router
@@ -102,6 +104,8 @@ def create_app(
     api.include_router(trust_public_router)
     api.include_router(trust_sme_router)
     api.include_router(trust_admin_router)
+    api.include_router(orders_router)
+    api.include_router(sme_orders_router)
     app.include_router(health_router)
     app.include_router(api)
     return app

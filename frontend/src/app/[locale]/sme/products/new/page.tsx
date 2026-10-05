@@ -4,7 +4,7 @@ import { AccessState } from "@/components/layout/AccessState";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ProductForm } from "@/components/sme/ProductForm";
 import type { Locale } from "@/i18n/routing";
-import { apiFetch } from "@/lib/api/client";
+import { serverFetch } from "@/lib/api/server";
 import type { Category } from "@/lib/api/types";
 import { requireSme } from "@/lib/sme";
 
@@ -17,7 +17,7 @@ export default async function NewProductPage({ params }: PageProps<"/[locale]/sm
     return <AccessState kind={guard.kind === "forbidden" ? "forbidden" : "unavailable"} roles={["SME"]} />;
   }
   const t = await getTranslations("sme.products");
-  const categories = await apiFetch<Category[]>("/categories");
+  const categories = await serverFetch<Category[]>("/categories");
 
   return (
     <div className="space-y-6">

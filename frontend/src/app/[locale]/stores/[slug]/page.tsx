@@ -12,7 +12,8 @@ import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Card";
 import { RemoteImage } from "@/components/ui/RemoteImage";
 import type { Locale } from "@/i18n/routing";
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { serverFetch } from "@/lib/api/server";
 import type { Passport, PolicyKey, PublicProduct, PublicStore } from "@/lib/api/types";
 import { formatDate, formatLkr, localize } from "@/lib/localize";
 
@@ -24,9 +25,9 @@ const loadStore = cache(async (slug: string) => {
   if (!SLUG.test(slug)) return null;
   try {
     const [store, products, passport] = await Promise.all([
-      apiFetch<PublicStore>(`/stores/${slug}`),
-      apiFetch<PublicProduct[]>(`/stores/${slug}/products`),
-      apiFetch<Passport>(`/stores/${slug}/passport`),
+      serverFetch<PublicStore>(`/stores/${slug}`),
+      serverFetch<PublicProduct[]>(`/stores/${slug}/products`),
+      serverFetch<Passport>(`/stores/${slug}/passport`),
     ]);
     return { store, products, passport };
   } catch (error) {
@@ -127,7 +128,8 @@ export default async function StorePage({ params }: PageProps<"/[locale]/stores/
                 const name = localize(product.name_i18n, locale);
                 return (
                   <li key={product.id}>
-                    <Card className="h-full space-y-3 p-4">
+                    <Link href={`/products/${product.id}`} className="block h-full">
+                    <Card className="h-full space-y-3 p-4 transition-shadow hover:shadow-md">
                       <RemoteImage
                         src={product.images[0]?.url}
                         alt={name?.text ?? ""}
@@ -144,6 +146,7 @@ export default async function StorePage({ params }: PageProps<"/[locale]/stores/
                       </p>
                       <AuthenticityBadge status={product.authenticity_status} />
                     </Card>
+                    </Link>
                   </li>
                 );
               })}
