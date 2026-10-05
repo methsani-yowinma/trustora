@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "title": "Trustora — Trust. Verify. Shop.",
+    "description": "Digital trust infrastructure for Sri Lankan social commerce."
+  },
+  "brand": {
+    "name": "Trustora",
+    "tagline": "Trust. Verify. Shop."
+  },
+  "nav": {
+    "home": "Home",
+    "smeDashboard": "SME dashboard",
+    "admin": "Admin",
+    "login": "Sign in",
+    "signup": "Create account",
+    "logout": "Sign out",
+    "language": "Language",
+    "mainNavigation": "Main navigation",
+    "signedInAs": "Signed in as {name}"
+  },
+  "roles": {
+    "CUSTOMER": "Customer",
+    "SME": "SME",
+    "ADMIN": "Administrator"
+  },
+  "home": {
+    "eyebrow": "Digital trust for social commerce",
+    "title": "Know who you are buying from — before you pay.",
+    "body": "Trustora brings verified business identity, real transaction outcomes and transparent evidence together, so customers can make informed decisions and honest Sri Lankan SMEs can stand out.",
+    "ctaCustomer": "Create a customer account",
+    "ctaSme": "Register your business",
+    "dimensionsTitle": "Three questions, answered with evidence",
+    "business": {
+      "title": "Business Trust",
+      "question": "Can I trust this business?",
+      "body": "Verified identity, documentation, contact details, linked social accounts and platform history."
+    },
+    "product": {
+      "title": "Product Trust",
+      "question": "Can I trust this product?",
+      "body": "Product information, supplier and authenticity evidence, and customer reports."
+    },
+    "transaction": {
+      "title": "Transaction Trust",
+      "question": "Can I trust this transaction?",
+      "body": "Completed orders, delivery performance, refunds, disputes and verified reviews."
+    },
+    "principleTitle": "Evidence, not guarantees",
+    "principleBody": "Trustora never claims a seller is 100% safe. Trust levels describe what the available verified and observed evidence shows today, and they change as new evidence arrives."
+  },
+  "auth": {
+    "loginTitle": "Sign in to Trustora",
+    "loginSubtitle": "Welcome back.",
+    "signupTitle": "Create your Trustora account",
+    "signupSubtitle": "Choose how you will use Trustora.",
+    "email": "Email address",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "fullName": "Full name",
+    "accountType": "Account type",
+    "accountTypeCustomer": "Customer",
+    "accountTypeCustomerHint": "Shop from verified businesses and track your orders.",
+    "accountTypeSme": "Business (SME)",
+    "accountTypeSmeHint": "Create a verified store and build your Trust Passport.",
+    "submitLogin": "Sign in",
+    "submitSignup": "Create account",
+    "submitting": "Please wait…",
+    "noAccount": "New to Trustora?",
+    "haveAccount": "Already have an account?",
+    "checkEmailTitle": "Check your email",
+    "checkEmailBody": "We sent a confirmation link to {email}. Open it to activate your account.",
+    "errors": {
+      "invalidEmail": "Enter a valid email address.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "nameRequired": "Enter your name.",
+      "invalidCredentials": "Email or password is incorrect.",
+      "emailNotConfirmed": "Please confirm your email address before signing in.",
+      "userExists": "An account with this email already exists.",
+      "weakPassword": "Choose a stronger password.",
+      "rateLimited": "Too many attempts. Please wait a moment and try again.",
+      "callbackFailed": "That sign-in link is invalid or has expired. Please sign in again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "dashboard": {
+    "smeTitle": "SME dashboard",
+    "smeBody": "Your store, products, orders and Trust Passport will appear here.",
+    "adminTitle": "Administration",
+    "adminBody": "SME verification, evidence review, complaints and audit logs will appear here.",
+    "comingSoon": "Coming in the next development phase.",
+    "profileTitle": "Your account",
+    "role": "Role",
+    "email": "Email",
+    "status": "Account status"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "SUSPENDED": "Suspended"
+  },
+  "errors": {
+    "noAccessTitle": "You don’t have access to this page",
+    "noAccessBody": "This area is only available to {roles} accounts.",
+    "apiUnavailableTitle": "Trustora is temporarily unavailable",
+    "apiUnavailableBody": "We couldn’t load your account. Please try again in a moment.",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you are looking for doesn’t exist.",
+    "backHome": "Back to home"
+  },
+  "footer": {
+    "disclaimer": "Trust levels are based on available verified and observed evidence and can change over time.",
+    "rights": "© {year} Trustora"
+  }
+}
