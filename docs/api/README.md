@@ -65,4 +65,17 @@ Base path: `/api/v1`. Interactive docs at `/docs` (disabled when `APP_ENV=produc
 | GET | `/admin/social-accounts?pending=true` | Accounts awaiting ownership confirmation |
 | POST | `/admin/social-accounts/{id}/decision` | `{verified: bool}` |
 
+### Trust (Phase 4)
+
+| Method | Path | Auth | Description |
+| ------ | ---- | ---- | ----------- |
+| GET | `/stores/{slug}/passport` | public | Digital Trust Passport: store identity, scores and level, positive/risk/info signals with provenance (evidence counts, never ids), evidence summary, 30-day history |
+| GET | `/stores/{slug}/trust/history?days=1..365` | public | `{days, baseline, points[], change: {from_score, to_score, from_level, to_level, days}}` |
+| GET | `/sme/trust` | SME | Own passport (also when unpublished) + improvement `suggestions` |
+| GET | `/admin/evidence?status=PENDING\|ACCEPTED\|REJECTED` | ADMIN | Product/authenticity evidence queue with 5-minute signed URLs |
+| POST | `/admin/evidence/{id}/review` | ADMIN | `{decision: ACCEPTED\|REJECTED, misleading, note (required to reject)}` → updates authenticity + trust |
+| POST | `/admin/smes/{id}/trust/recalculate` | ADMIN | Recalculate now (e.g. after a methodology change) |
+
+`POST /admin/verifications/{id}/decision` also accepts `documents_misleading` (rejections only).
+
 Uploads are limited to 30/minute per client in addition to the default limit.

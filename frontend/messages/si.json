@@ -191,7 +191,8 @@
       "dashboard": "සාරාංශය",
       "store": "වෙළඳසැල",
       "products": "නිෂ්පාදන",
-      "verification": "තහවුරු කිරීම"
+      "verification": "තහවුරු කිරීම",
+      "passport": "Trust Passport"
     },
     "onboarding": {
       "title": "ඔබේ ව්‍යාපාරය ලියාපදිංචි කරන්න",
@@ -321,19 +322,20 @@
     "inStock": "තොගයේ ඇත",
     "outOfStock": "තොගයේ නැත",
     "fallbackLanguage": "විකුණුම්කරු ලබා දුන් භාෂාවෙන් පෙන්වයි.",
-    "trustPassportSoon": "මෙම වෙළඳසැල සඳහා සම්පූර්ණ ඩිජිටල් Trust Passport ළඟදීම.",
     "sellerProvided": "විකුණුම්කරු ලබා දුන්"
   },
   "admin": {
     "nav": {
       "label": "පරිපාලන සංචාලනය",
       "dashboard": "සාරාංශය",
-      "verifications": "SME තහවුරු කිරීම"
+      "verifications": "SME තහවුරු කිරීම",
+      "evidence": "විශ්වාසය සහ සාක්ෂි"
     },
     "dashboard": {
       "pendingVerifications": "සමාලෝචනය සඳහා රැඳී ඇති තහවුරු කිරීමේ ඉල්ලීම්",
       "pendingSocial": "තහවුරු කිරීම සඳහා රැඳී ඇති සමාජ මාධ්‍ය ගිණුම්",
-      "review": "සමාලෝචනය කරන්න"
+      "review": "සමාලෝචනය කරන්න",
+      "pendingEvidence": "සමාලෝචනය සඳහා රැඳී ඇති සාක්ෂි"
     },
     "verifications": {
       "title": "SME තහවුරු කිරීම",
@@ -356,7 +358,8 @@
       "noteRequired": "අනුමත නොකරන විට අවශ්‍යයි.",
       "approve": "තහවුරු කිරීම අනුමත කරන්න",
       "reject": "අනුමත නොකරන්න",
-      "decided": "{date} තීරණය කළා"
+      "decided": "{date} තීරණය කළා",
+      "documentsMisleading": "ලේඛන ව්‍යාජ ලෙස හෝ වෙනත් ව්‍යාපාරයකට අයත් ලෙස පෙනේ (තහවුරු කළ අවදානම් සොයාගැනීමක් ලෙස වාර්තා වේ)"
     },
     "social": {
       "title": "සමාජ මාධ්‍ය ගිණුම් තහවුරු කිරීම",
@@ -365,5 +368,135 @@
       "revoke": "අවලංගු කරන්න",
       "empty": "තහවුරු කිරීම සඳහා රැඳී ඇති සමාජ මාධ්‍ය ගිණුම් නැත."
     }
+  },
+  "trustLevel": {
+    "VERIFIED": {
+      "label": "තහවුරු කළ සහ විශ්වාසනීය",
+      "description": "සම්පූර්ණ කළ ගනුදෙනු පිළිබඳ ශක්තිමත් වාර්තාවක් සහිත තහවුරු කළ ව්‍යාපාරයකි — පවතින සාක්ෂි මත පදනම්ව."
+    },
+    "TRUSTED": {
+      "label": "විශ්වාසනීය",
+      "description": "සම්පූර්ණ කළ ගනුදෙනු වාර්තාවක් ඇතුළුව, පවතින සාක්ෂි මත පදනම්ව විශ්වාසනීයයි."
+    },
+    "DEVELOPING": {
+      "label": "වර්ධනය වෙමින්",
+      "description": "ධනාත්මක සාක්ෂි කිහිපයක් ඇත, නමුත් මෙම ව්‍යාපාරය විශ්වාසනීය යැයි කීමට තවම ප්‍රමාණවත් ගනුදෙනු ඉතිහාසයක් නැත."
+    },
+    "CAUTION": {
+      "label": "ප්‍රවේශම් වන්න",
+      "description": "සාක්ෂි සීමිතයි හෝ සැලකිලිමත් විය යුතු කරුණු ඇත. මිලදී ගැනීමට පෙර පහත විස්තර හොඳින් පරීක්ෂා කරන්න."
+    },
+    "HIGH_RISK": {
+      "label": "ඉහළ අවදානම",
+      "description": "තහවුරු කළ ඍණාත්මක සොයාගැනීම් ඇත. මෙම ව්‍යාපාරය සමඟ ගනුදෙනු කිරීමට පෙර අමතර සැලකිල්ලක් දක්වන ලෙස Trustora නිර්දේශ කරයි."
+    }
+  },
+  "trustDimension": {
+    "BUSINESS": "ව්‍යාපාර විශ්වාසය",
+    "PRODUCT": "නිෂ්පාදන විශ්වාසය",
+    "TRANSACTION": "ගනුදෙනු විශ්වාසය",
+    "BUSINESS_question": "මෙම ව්‍යාපාරය විශ්වාස කළ හැකිද?",
+    "PRODUCT_question": "නිෂ්පාදන තොරතුරු විශ්වාස කළ හැකිද?",
+    "TRANSACTION_question": "ඔවුන් සමඟ ගනුදෙනුවක් විශ්වාස කළ හැකිද?"
+  },
+  "trustSignals": {
+    "BUSINESS_VERIFIED": "ව්‍යාපාර ලියාපදිංචිය Trustora මගින් තහවුරු කර ඇත",
+    "VERIFICATION_PENDING": "ව්‍යාපාර තහවුරු කිරීම සිදු වෙමින් පවතී",
+    "VERIFICATION_NOT_APPROVED": "ව්‍යාපාර තහවුරු කිරීම අනුමත නොවීය",
+    "BUSINESS_NOT_VERIFIED": "ව්‍යාපාරය Trustora මගින් තහවුරු කර නැත",
+    "CONTACT_CONFIRMED": "සම්බන්ධතා විස්තර Trustora මගින් තහවුරු කර ඇත",
+    "SOCIAL_ACCOUNTS_CONFIRMED": "සමාජ මාධ්‍ය ගිණුම් {count}ක් මෙම ව්‍යාපාරයට අයත් බව තහවුරු කර ඇත",
+    "POLICIES_PUBLISHED": "ප්‍රකාශිත ප්‍රතිපත්ති: {policies}",
+    "NO_POLICIES": "ආපසු දීම, මුදල් ආපසු ගෙවීම හෝ බෙදාහැරීමේ ප්‍රතිපත්ති ප්‍රකාශ කර නැත",
+    "PLATFORM_TENURE": "දින {days}ක් Trustora හි",
+    "NEW_ON_PLATFORM": "Trustora වෙත අලුතින් (දින {days})",
+    "PROFILE_COMPLETE": "සම්පූර්ණ වෙළඳසැල් පැතිකඩ",
+    "MISLEADING_EVIDENCE": "සාක්ෂි {count}ක් නොමඟ යවන බව Trustora සොයා ගෙන ඇත",
+    "ACCOUNT_SUSPENDED": "මෙම ව්‍යාපාර ගිණුම අත්හිටුවා ඇත",
+    "PRODUCTS_AUTHENTICITY_VERIFIED": "නිෂ්පාදන {total}න් {count}ක සත්‍යතා ලේඛන Trustora මගින් තහවුරු කර ඇත",
+    "PRODUCTS_PARTIALLY_VERIFIED": "නිෂ්පාදන {total}න් {count}ක සත්‍යතා සාක්ෂි අර්ධ වශයෙන් තහවුරු කර ඇත",
+    "PRODUCTS_WITHOUT_AUTHENTICITY_EVIDENCE": "නිෂ්පාදන {total}න් {count}කට තවම තහවුරු කළ සත්‍යතා සාක්ෂි නැත",
+    "PRODUCT_AUTHENTICITY_CONCERN": "නිෂ්පාදන {total}න් {count}ක සත්‍යතාව පිළිබඳ සැකයක් ඇත",
+    "NO_ACTIVE_PRODUCTS": "තවම නිෂ්පාදන ලැයිස්තුගත කර නැත",
+    "LIMITED_TRANSACTION_HISTORY": "Trustora හි ගනුදෙනු ඉතිහාසය සීමිතයි (සම්පූර්ණ කළ ඇණවුම් {completed_orders})",
+    "COMPLETED_ORDERS": "Trustora හි සම්පූර්ණ කළ ඇණවුම් {count}",
+    "DELIVERY_FAILURES": "අසාර්ථක බෙදාහැරීම් {count}",
+    "LATE_DELIVERIES": "ප්‍රමාද වූ බෙදාහැරීම් {count}",
+    "SELLER_CANCELLATIONS": "විකුණුම්කරු අවලංගු කළ ඇණවුම් {count}",
+    "UPHELD_COMPLAINTS": "සමාලෝචනයෙන් පසු තහවුරු වූ පාරිභෝගික පැමිණිලි {count}",
+    "UNRESOLVED_COMPLAINTS": "දින 14කට වැඩි කාලයක් නොවිසඳුණු පැමිණිලි {count}",
+    "VERIFIED_REVIEW_RATING": "තහවුරු කළ ගැනුම්කරුවන් {count}ගෙන් සාමාන්‍ය ශ්‍රේණිගත කිරීම {average}",
+    "unknown": "වෙනත් සංඥාවක්"
+  },
+  "trustSuggestions": {
+    "RESOLVE_MISLEADING_EVIDENCE": "ඔබේ සාක්ෂි කිහිපයක් නොමඟ යවන බව සොයා ගෙන ඇත. එය විසඳීමට Trustora සහාය අමතන්න.",
+    "GET_VERIFIED": "ඔබේ ව්‍යාපාරය තහවුරු කරගන්න.",
+    "CONFIRM_SOCIAL_ACCOUNT": "සමාජ මාධ්‍ය ගිණුමක් සම්බන්ධ කර ඔබේ Trustora කේතය එහි bio එකට එක් කරන්න.",
+    "PUBLISH_POLICIES": "අඩු ප්‍රතිපත්ති ප්‍රකාශ කරන්න: {missing}.",
+    "COMPLETE_PROFILE": "ලාංඡනයක් සහ වෙළඳසැල් විස්තරයක් එක් කරන්න.",
+    "ADD_PRODUCTS": "ඔබේ පළමු නිෂ්පාදනය එක් කරන්න.",
+    "ADD_PRODUCT_EVIDENCE": "නිෂ්පාදන {count}ක් සඳහා සත්‍යතා සාක්ෂි උඩුගත කරන්න.",
+    "BUILD_TRANSACTION_HISTORY": "ගනුදෙනු විශ්වාසය ගොඩනැගීමට Trustora හරහා ඇණවුම් සම්පූර්ණ කරන්න."
+  },
+  "passport": {
+    "title": "ඩිජිටල් Trust Passport",
+    "subtitle": "{name} පිළිබඳව පවතින සාක්ෂි පවසන දේ",
+    "overall": "සමස්ත විශ්වාස ලකුණු",
+    "outOf": "100න්",
+    "dimensions": "විශ්වාසයේ මානයන්",
+    "whyTitle": "මම මෙම ව්‍යාපාරය විශ්වාස කළ යුත්තේ ඇයි?",
+    "whyBody": "ලකුණුවල සෑම ලකුණක්ම මෙම සංඥා වලින් එකකින් පැමිණේ. සෑම එකක්ම තොරතුරු පැමිණෙන්නේ කොහෙන්දැයි පෙන්වයි.",
+    "positive": "ධනාත්මක සංඥා",
+    "risks": "අවදානම් සංඥා",
+    "info": "දැනගත යුතු දේ",
+    "noRisks": "පවතින සාක්ෂිවල අවදානම් සංඥා හමු නොවීය.",
+    "noPositive": "තවම ධනාත්මක සංඥා නැත.",
+    "evidenceTitle": "සාක්ෂි සාරාංශය",
+    "evidenceTotal": "සාක්ෂි අයිතම",
+    "evidenceAccepted": "සමාලෝචනයෙන් පසු පිළිගත්",
+    "evidencePending": "සමාලෝචනය සඳහා රැඳී ඇති",
+    "evidenceBy": "මූලාශ්‍රය අනුව",
+    "verifiedOn": "{date} තහවුරු කළා",
+    "notVerified": "තහවුරු කර නැත",
+    "lastUpdate": "විශ්වාසය අවසන් වරට යාවත්කාලීන කළේ {date}",
+    "methodology": "ලකුණු ගණනය කරනු ලබන්නේ තහවුරු කළ සහ නිරීක්ෂණය කළ සාක්ෂි මත Trustora නීති මගිනි (ක්‍රමය {version}). ඒවා AI මගින් ජනනය කරන ලද ඒවා හෝ සහතිකයක් නොවේ.",
+    "disclaimer": "විශ්වාස මට්ටම් අද පවතින සාක්ෂි විස්තර කරන අතර කාලයත් සමඟ වෙනස් විය හැක. කිසියම් විකුණුම්කරුවෙකු 100% ආරක්ෂිත බව Trustora කිසි විටෙක ප්‍රකාශ නොකරයි.",
+    "openPassport": "ඩිජිටල් Trust Passport බලන්න",
+    "storeLink": "වෙළඳසැලට ආපසු",
+    "historyTitle": "පසුගිය දින {days} තුළ විශ්වාස ලකුණු",
+    "historyIncreased": "පසුගිය දින {days} තුළ විශ්වාස ලකුණු {from} සිට {to} දක්වා වැඩි විය.",
+    "historyDecreased": "පසුගිය දින {days} තුළ විශ්වාස ලකුණු {from} සිට {to} දක්වා අඩු විය.",
+    "historyUnchanged": "පසුගිය දින {days} තුළ විශ්වාස ලකුණු {to} ලෙස නොවෙනස්ව පැවතුණි.",
+    "historyEmpty": "තවම විශ්වාස ඉතිහාසයක් නැත.",
+    "showTable": "වගුවක් ලෙස පෙන්වන්න",
+    "tableDate": "දිනය",
+    "tableScore": "ලකුණු",
+    "tableLevel": "මට්ටම",
+    "chartLabel": "කාලයත් සමඟ විශ්වාස ලකුණු පෙන්වන රේඛා ප්‍රස්තාරය",
+    "pointsGained": "+{points} ලකුණු",
+    "pointsLost": "−{points} ලකුණු"
+  },
+  "smeTrust": {
+    "title": "ඔබේ Trust Passport",
+    "body": "පාරිභෝගිකයන් දකින්නේ මෙයයි. සාක්ෂි වෙනස් වන විට ඔබේ ලකුණු ස්වයංක්‍රීයව යාවත්කාලීන වේ.",
+    "suggestionsTitle": "ඔබේ විශ්වාසය ශක්තිමත් කරන ආකාරය",
+    "noSuggestions": "දැනට එක් කිරීමට කිසිවක් නැත — ඇණවුම් හොඳින් සම්පූර්ණ කිරීම දිගටම කරගෙන යන්න.",
+    "viewPublic": "පොදු passport බලන්න"
+  },
+  "adminEvidence": {
+    "title": "විශ්වාස සහ සාක්ෂි සමාලෝචනය",
+    "body": "SME මගින් ඉදිරිපත් කළ සත්‍යතා සාක්ෂි සමාලෝචනය කරන්න. තීරණ වහාම නිෂ්පාදන සත්‍යතාව සහ විශ්වාස ලකුණු යාවත්කාලීන කරන අතර විගණන සටහනේ වාර්තා වේ.",
+    "filterPENDING": "සමාලෝචනය සඳහා රැඳී ඇත",
+    "filterACCEPTED": "පිළිගත්",
+    "filterREJECTED": "පිළිනොගත්",
+    "empty": "මෙම ලැයිස්තුවේ සාක්ෂි නැත.",
+    "product": "නිෂ්පාදනය",
+    "store": "වෙළඳසැල",
+    "accept": "පිළිගන්න",
+    "reject": "ප්‍රතික්ෂේප කරන්න",
+    "misleading": "නොමඟ යවන (ව්‍යාජ ලෙස පෙනේ හෝ නොගැළපේ) — තහවුරු කළ අවදානම් සොයාගැනීමක් ලෙස ගණන් ගැනේ",
+    "note": "සමාලෝචන සටහන",
+    "noteRequired": "ප්‍රතික්ෂේප කරන විට අවශ්‍යයි.",
+    "flaggedMisleading": "නොමඟ යවන ලෙස සලකුණු කර ඇත"
   }
 }

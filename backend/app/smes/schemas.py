@@ -152,6 +152,8 @@ class VerificationDecisionIn(BaseModel):
     decision: Literal["APPROVED", "REJECTED"]
     note: Annotated[str, StringConstraints(max_length=1000)] | None = None
     contact_verified: bool = False
+    # Rejected documents that appear forged or do not belong to the business.
+    documents_misleading: bool = False
 
     @model_validator(mode="after")
     def _note_required_on_reject(self) -> "VerificationDecisionIn":
@@ -159,6 +161,8 @@ class VerificationDecisionIn(BaseModel):
             raise ValueError("A note explaining the rejection is required")
         if self.decision == "REJECTED" and self.contact_verified:
             raise ValueError("Contact details cannot be confirmed on a rejected application")
+        if self.decision == "APPROVED" and self.documents_misleading:
+            raise ValueError("Approved documents cannot be flagged as misleading")
         return self
 
 
