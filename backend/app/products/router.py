@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Path, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Path, Query, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.auth.dependencies import get_anon_db, get_storage, get_user_db, require_role
@@ -15,7 +15,7 @@ from app.core.uploads import (
     MAX_IMAGE_BYTES,
     read_upload,
 )
-from app.products import service
+from app.products import browse, service
 from app.products.schemas import (
     CategoryOut,
     EvidenceDescription,
@@ -23,8 +23,11 @@ from app.products.schemas import (
     ProductDetailOut,
     ProductEvidenceType,
     ProductOut,
+    ProductPage,
     ProductUpdate,
+    PublicProductDetail,
     PublicProductOut,
+    StorePage,
 )
 
 UPLOAD_LIMIT = Depends(rate_limit("30/minute", scope="uploads"))
@@ -113,6 +116,57 @@ async def add_evidence(
 
 # --- Public ---------------------------------------------------------------------------------
 public_router = APIRouter(tags=["stores"])
+
+
+@public_router.get("/products", response_model=ProductPage)
+async def search_products(
+    conn: AnonDb,
+    storage: Storage,
+    q: Annotated[str | None, Query(max_length=80)] = None,
+    category: Annotated[int | None, Query(ge=1)] = None,
+    verified: bool = False,
+    store: Annotated[str | None, Query(pattern=r"^[A-Za-z0-9-]{3,40}$")] = None,
+    sort: browse.ProductSort = "newest",
+    page: Annotated[int, Query(ge=1, le=500)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=48)] = 24,
+) -> ProductPage:
+    return await browse.search_products(
+        conn,
+        storage,
+        q=(q or "").strip() or None,
+        category_id=category,
+        verified_only=verified,
+        store_slug=store,
+        sort=sort,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@public_router.get("/products/{product_id}", response_model=PublicProductDetail)
+async def get_public_product(
+    product_id: UUID, conn: AnonDb, storage: Storage
+) -> PublicProductDetail:
+    return await browse.get_product(conn, storage, str(product_id))
+
+
+@public_router.get("/stores", response_model=StorePage)
+async def list_stores(
+    conn: AnonDb,
+    storage: Storage,
+    q: Annotated[str | None, Query(max_length=80)] = None,
+    verified: bool = False,
+    page: Annotated[int, Query(ge=1, le=500)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=48)] = 24,
+) -> StorePage:
+    return await browse.list_stores(
+        conn,
+        storage,
+        q=(q or "").strip() or None,
+        verified_only=verified,
+        page=page,
+        page_size=page_size,
+    )
 
 
 @public_router.get("/categories", response_model=list[CategoryOut])

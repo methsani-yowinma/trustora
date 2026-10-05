@@ -4,7 +4,8 @@ import { cache } from "react";
 
 import { redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { serverFetch } from "@/lib/api/server";
 import type { Profile, Sme, UserRole } from "@/lib/api/types";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,7 +29,7 @@ export const getSession = cache(async (): Promise<SessionState> => {
   if (!token) return { status: "anonymous" };
 
   try {
-    const profile = await apiFetch<Profile>("/me", { token });
+    const profile = await serverFetch<Profile>("/me", { token });
     return { status: "authenticated", profile };
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return { status: "anonymous" };
@@ -62,7 +63,7 @@ export async function requireRole(
 
 /** Authenticated API call from Server Components (the API verifies the token). */
 export async function serverApi<T>(path: string): Promise<T> {
-  return apiFetch<T>(path, { token: await getAccessToken() });
+  return serverFetch<T>(path, { token: await getAccessToken() });
 }
 
 /** The signed-in SME's own store, or null if they have not registered one yet. */

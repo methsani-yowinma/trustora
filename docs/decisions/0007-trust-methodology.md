@@ -1,4 +1,4 @@
-# ADR 0007 — Trust methodology (rules version 2026.10-1)
+# ADR 0007 — Trust methodology (rules version 2026.10-2)
 
 **Status:** Accepted (Phase 4). Parameters live in `backend/app/trust/trust_weights.py`.
 
@@ -22,7 +22,7 @@ with a code, a provenance (verified fact, seller claim, platform statistic, …)
 | --------- | ---- | ------------ |
 | Business | 10 | verified business +40 · contact confirmed +15 · confirmed social 1→+10, 2+→+15 · each policy +5 (seller claim) · tenure ≥90d +5, ≥365d +10 · complete profile +5 · misleading evidence −25 each (max −50) · suspended −50 |
 | Product | 50 | mean over **active** products of VERIFIED 100 · PARTIALLY_VERIFIED 75 · UNVERIFIED 50 · CONCERN 0 |
-| Transaction | 50 | observed performance (100 minus delivery-failure, late-delivery, cancellation, upheld/overdue complaint penalties, ± verified rating) blended toward 50 by `n / (n + 10)` completed orders |
+| Transaction | 50 | observed performance = success rate over seller-attributable outcomes (completed, failed deliveries, seller cancellations) × 100, minus late-delivery and upheld/overdue complaint penalties, ± verified rating; blended toward 50 by `n / (n + 10)` outcomes |
 
 Overall = 0.40 · Business + 0.25 · Product + 0.35 · Transaction.
 
@@ -44,6 +44,9 @@ Changes from the Phase 1 sketch, made while implementing:
 - A brand-new store with no evidence lands on CAUTION, not HIGH_RISK.
 - A rejected verification carries 0 points (it may only mean an illegible scan); forged documents
   are flagged as misleading by the admin, which is a verified negative finding.
+- 2026.10-2 (Phase 5): the transaction sample counts every seller-attributable outcome, not only
+  completed orders, so failed deliveries and seller cancellations are visible (and lower the score)
+  even before a seller's first completed order.
 
 ## Consequences
 

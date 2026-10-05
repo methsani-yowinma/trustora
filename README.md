@@ -32,8 +32,9 @@ trustora/
 | 1 | Architecture | ✅ Approved |
 | 2 | Foundation: setup, DB, Supabase config, auth, roles, base UI, env | ✅ Approved |
 | 3 | SME registration, verification, store, product management | ✅ Approved |
-| 4 | Trust Engine: evidence review, rules, calculation, Trust Passport, history | ✅ Implemented |
-| 5–10 | Commerce · Commerce · Customer Trust · Gemini · Trustora AI · Security · Testing | Pending |
+| 4 | Trust Engine: evidence review, rules, calculation, Trust Passport, history | ✅ Approved |
+| 5 | Commerce: browsing, cart, checkout, orders, delivery status | ✅ Implemented |
+| 6–10 | Customer Trust · Gemini · Trustora AI · Security · Testing | Pending |
 
 ## Prerequisites
 
@@ -74,6 +75,10 @@ uvicorn app.main:create_app --factory --reload --port 8000
 - `SUPABASE_JWT_SECRET`: only for projects still signing tokens with the legacy HS256 secret.
   Projects using JWT signing keys are verified automatically through JWKS.
 - API docs (development only): <http://localhost:8000/docs>. Health: `GET /api/v1/health`.
+- **Behind the Next.js server / a load balancer**, run uvicorn with
+  `--proxy-headers --forwarded-allow-ips=<frontend/LB address>`. Server-rendered pages forward the
+  visitor's IP (`X-Forwarded-For`), so per-client rate limits apply per visitor rather than to the
+  frontend server as a whole.
 
 ## 3. Frontend
 
@@ -87,7 +92,7 @@ npm run dev                       # http://localhost:3000 → redirects to /en
 ## Testing
 
 ```bash
-# Backend: 207 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
+# Backend: 237 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
 cd backend && pytest
 ruff check . && ruff format --check .
 

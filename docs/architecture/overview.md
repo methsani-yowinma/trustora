@@ -47,7 +47,7 @@ metadata). Signup may request CUSTOMER or SME; ADMIN is assigned manually in the
 | 2 ✅ | `profiles`, `audit_logs` |
 | 3 ✅ | `smes` (incl. storefront fields), `sme_social_accounts`, `business_verifications`, `evidence`, `categories`, `products`, `product_images` |
 | 4 ✅ | `trust_scores`, `trust_score_history`, `trust_signals` |
-| 5 | `orders`, `order_items`, `payments`, `deliveries` |
+| 5 ✅ | `orders`, `order_items`, `payments`, `deliveries` |
 | 6 | `reviews`, `complaints` |
 
 The Trust Passport is a composed view (`smes` + `trust_scores` + `trust_signals`), not a table.

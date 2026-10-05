@@ -11,7 +11,8 @@ import { Alert } from "@/components/ui/Alert";
 import { RemoteImage } from "@/components/ui/RemoteImage";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { serverFetch } from "@/lib/api/server";
 import type { Passport } from "@/lib/api/types";
 import { formatDate } from "@/lib/localize";
 
@@ -20,7 +21,7 @@ const SLUG = /^[A-Za-z0-9-]{3,40}$/;
 const loadPassport = cache(async (slug: string) => {
   if (!SLUG.test(slug)) return null;
   try {
-    return await apiFetch<Passport>(`/stores/${slug}/passport`);
+    return await serverFetch<Passport>(`/stores/${slug}/passport`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;

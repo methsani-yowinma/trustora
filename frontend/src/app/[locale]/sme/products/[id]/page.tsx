@@ -7,7 +7,8 @@ import { ProductForm } from "@/components/sme/ProductForm";
 import { ProductEvidence, ProductImages, RemoveProductButton } from "@/components/sme/ProductMedia";
 import { AuthenticityBadge } from "@/components/trust/StatusBadges";
 import type { Locale } from "@/i18n/routing";
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { serverFetch } from "@/lib/api/server";
 import type { Category, ProductDetail } from "@/lib/api/types";
 import { serverApi } from "@/lib/auth";
 import { localizedString } from "@/lib/localize";
@@ -34,7 +35,7 @@ export default async function EditProductPage({ params }: PageProps<"/[locale]/s
   }
   const [t, categories] = await Promise.all([
     getTranslations("sme.products"),
-    apiFetch<Category[]>("/categories"),
+    serverFetch<Category[]>("/categories"),
   ]);
 
   return (

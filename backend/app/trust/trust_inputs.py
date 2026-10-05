@@ -115,10 +115,39 @@ async def collect_inputs(conn: AsyncConnection, sme_id: str) -> tuple[TrustInput
             )
             for p in products
         ),
-        # Order, delivery, review and complaint outcomes are added in Phases 5–6.
-        transactions=TransactionStats(),
+        transactions=await _transaction_stats(conn, sme_id),
     )
     return inputs, _evidence_summary(evidence_rows)
+
+
+async def _transaction_stats(conn: AsyncConnection, sme_id: str) -> TransactionStats:
+    """Order and delivery outcomes. Reviews and complaints are added in Phase 6."""
+    row = (
+        (
+            await conn.execute(
+                text(
+                    "select "
+                    "count(*) filter (where o.status in ('DELIVERED', 'COMPLETED')) as completed, "
+                    "count(*) filter (where o.status = 'DELIVERY_FAILED') as failed, "
+                    "count(*) filter (where o.status = 'CANCELLED' and o.cancelled_by = 'SME') as seller_cancelled, "
+                    "count(*) filter (where d.delivered_at is not null and "
+                    "  ((d.delivered_at + interval '5 hours 30 minutes') at time zone 'UTC')::date "
+                    "  > d.estimated_delivery_date) as late "  # Sri Lanka time: fixed UTC+05:30
+                    "from public.orders o join public.deliveries d on d.order_id = o.id "
+                    "where o.sme_id = :id"
+                ),
+                {"id": sme_id},
+            )
+        )
+        .mappings()
+        .one()
+    )
+    return TransactionStats(
+        completed_orders=row["completed"],
+        failed_deliveries=row["failed"],
+        late_deliveries=row["late"],
+        seller_cancellations=row["seller_cancelled"],
+    )
 
 
 def _evidence_summary(rows: Any) -> dict[str, Any]:

@@ -100,3 +100,55 @@ class PublicProductOut(BaseModel):
     in_stock: bool
     authenticity_status: AuthenticityStatus
     images: list[ProductImageOut]
+
+
+# --- Public browsing (Phase 5) ----------------------------------------------------------
+class StoreBadge(BaseModel):
+    id: str
+    slug: str
+    name: str
+    verification_status: str
+    trust_level: str | None
+    trust_score: int | None
+
+
+class ProductCard(BaseModel):
+    id: str
+    category_id: int
+    name_i18n: dict[str, str]
+    price_lkr: Decimal
+    in_stock: bool
+    authenticity_status: AuthenticityStatus
+    image_url: str | None
+    store: StoreBadge
+
+
+class ProductPage(BaseModel):
+    items: list[ProductCard]
+    total: int
+    page: int
+    page_size: int
+
+
+class PublicProductDetail(PublicProductOut):
+    store: StoreBadge
+    max_quantity: int
+
+
+class StoreCard(BaseModel):
+    id: str
+    slug: str
+    name: str
+    logo_url: str | None
+    description_i18n: dict[str, str] | None
+    verification_status: str
+    trust_level: str | None
+    trust_score: int | None
+    product_count: int
+
+
+class StorePage(BaseModel):
+    items: list[StoreCard]
+    total: int
+    page: int
+    page_size: int

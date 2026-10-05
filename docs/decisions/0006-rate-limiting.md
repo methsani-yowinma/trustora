@@ -17,3 +17,7 @@ limit via the router; stricter limits (e.g. AI chat, uploads) are added per rout
 - In-memory, per-process limits: correct for a single instance. Multiple instances would need
   shared storage (e.g. Redis) — not required for the MVP.
 - Behind a proxy, uvicorn must trust forwarded headers so limits apply per client, not per proxy.
+- Server-side rendering calls the API from the Next.js server. Those calls forward the visitor's
+  IP in `X-Forwarded-For` (`frontend/src/lib/api/server.ts`), and uvicorn is run with
+  `--proxy-headers --forwarded-allow-ips=<frontend address>`. Without this, every visitor would
+  share one rate-limit bucket (found by the Phase 5 end-to-end tests).
