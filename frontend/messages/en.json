@@ -191,7 +191,8 @@
       "dashboard": "Overview",
       "store": "Store",
       "products": "Products",
-      "verification": "Verification"
+      "verification": "Verification",
+      "passport": "Trust Passport"
     },
     "onboarding": {
       "title": "Register your business",
@@ -321,19 +322,20 @@
     "inStock": "In stock",
     "outOfStock": "Out of stock",
     "fallbackLanguage": "Shown in the language provided by the seller.",
-    "trustPassportSoon": "The full Digital Trust Passport for this store is coming soon.",
     "sellerProvided": "Provided by the seller"
   },
   "admin": {
     "nav": {
       "label": "Admin navigation",
       "dashboard": "Overview",
-      "verifications": "SME verification"
+      "verifications": "SME verification",
+      "evidence": "Trust & evidence"
     },
     "dashboard": {
       "pendingVerifications": "Verification requests awaiting review",
       "pendingSocial": "Social accounts awaiting confirmation",
-      "review": "Review"
+      "review": "Review",
+      "pendingEvidence": "Evidence awaiting review"
     },
     "verifications": {
       "title": "SME verification",
@@ -356,7 +358,8 @@
       "noteRequired": "Required when not approving.",
       "approve": "Approve verification",
       "reject": "Do not approve",
-      "decided": "Decided on {date}"
+      "decided": "Decided on {date}",
+      "documentsMisleading": "Documents appear forged or belong to another business (recorded as a verified risk finding)"
     },
     "social": {
       "title": "Social account confirmation",
@@ -365,5 +368,135 @@
       "revoke": "Revoke",
       "empty": "No social accounts awaiting confirmation."
     }
+  },
+  "trustLevel": {
+    "VERIFIED": {
+      "label": "Verified & trusted",
+      "description": "A verified business with a strong record of completed transactions, based on available evidence."
+    },
+    "TRUSTED": {
+      "label": "Trusted",
+      "description": "Trusted based on available evidence, including a record of completed transactions."
+    },
+    "DEVELOPING": {
+      "label": "Developing",
+      "description": "Some positive evidence, but not enough transaction history yet to call this business trusted."
+    },
+    "CAUTION": {
+      "label": "Caution",
+      "description": "Limited or concerning evidence. Check the details below carefully before buying."
+    },
+    "HIGH_RISK": {
+      "label": "High risk",
+      "description": "Verified negative findings. Trustora recommends extra care before dealing with this business."
+    }
+  },
+  "trustDimension": {
+    "BUSINESS": "Business trust",
+    "PRODUCT": "Product trust",
+    "TRANSACTION": "Transaction trust",
+    "BUSINESS_question": "Can I trust this business?",
+    "PRODUCT_question": "Can I trust the product information?",
+    "TRANSACTION_question": "Can I trust a transaction with them?"
+  },
+  "trustSignals": {
+    "BUSINESS_VERIFIED": "Business registration verified by Trustora",
+    "VERIFICATION_PENDING": "Business verification is in progress",
+    "VERIFICATION_NOT_APPROVED": "Business verification was not approved",
+    "BUSINESS_NOT_VERIFIED": "Business has not been verified by Trustora",
+    "CONTACT_CONFIRMED": "Contact details confirmed by Trustora",
+    "SOCIAL_ACCOUNTS_CONFIRMED": "{count, plural, one {# social media account} other {# social media accounts}} confirmed as owned by this business",
+    "POLICIES_PUBLISHED": "Published policies: {policies}",
+    "NO_POLICIES": "No returns, refunds or delivery policies published",
+    "PLATFORM_TENURE": "On Trustora for {days} days",
+    "NEW_ON_PLATFORM": "New on Trustora ({days} days)",
+    "PROFILE_COMPLETE": "Complete store profile",
+    "MISLEADING_EVIDENCE": "{count, plural, one {# piece of evidence was} other {# pieces of evidence were}} found by Trustora to be misleading",
+    "ACCOUNT_SUSPENDED": "This business account is suspended",
+    "PRODUCTS_AUTHENTICITY_VERIFIED": "{count} of {total} products have authenticity documents verified by Trustora",
+    "PRODUCTS_PARTIALLY_VERIFIED": "{count} of {total} products have partially verified authenticity evidence",
+    "PRODUCTS_WITHOUT_AUTHENTICITY_EVIDENCE": "{count} of {total} products have no verified authenticity evidence yet",
+    "PRODUCT_AUTHENTICITY_CONCERN": "{count} of {total} products have an authenticity concern",
+    "NO_ACTIVE_PRODUCTS": "No products listed yet",
+    "LIMITED_TRANSACTION_HISTORY": "Limited transaction history on Trustora ({completed_orders} completed orders)",
+    "COMPLETED_ORDERS": "{count} completed orders on Trustora",
+    "DELIVERY_FAILURES": "{count} failed deliveries",
+    "LATE_DELIVERIES": "{count} late deliveries",
+    "SELLER_CANCELLATIONS": "{count} orders cancelled by the seller",
+    "UPHELD_COMPLAINTS": "{count} customer complaints upheld after review",
+    "UNRESOLVED_COMPLAINTS": "{count} complaints unresolved for more than 14 days",
+    "VERIFIED_REVIEW_RATING": "Average rating {average} from {count} verified buyers",
+    "unknown": "Other signal"
+  },
+  "trustSuggestions": {
+    "RESOLVE_MISLEADING_EVIDENCE": "Some of your evidence was found to be misleading. Contact Trustora support to resolve it.",
+    "GET_VERIFIED": "Get your business verified.",
+    "CONFIRM_SOCIAL_ACCOUNT": "Link a social media account and add your Trustora code to its bio.",
+    "PUBLISH_POLICIES": "Publish your missing policies: {missing}.",
+    "COMPLETE_PROFILE": "Add a logo and a store description.",
+    "ADD_PRODUCTS": "Add your first product.",
+    "ADD_PRODUCT_EVIDENCE": "Upload authenticity evidence for {count, plural, one {# product} other {# products}}.",
+    "BUILD_TRANSACTION_HISTORY": "Complete orders on Trustora to build transaction trust."
+  },
+  "passport": {
+    "title": "Digital Trust Passport",
+    "subtitle": "What the available evidence says about {name}",
+    "overall": "Overall trust score",
+    "outOf": "out of 100",
+    "dimensions": "Trust dimensions",
+    "whyTitle": "Why should I trust this business?",
+    "whyBody": "Every point in the score comes from one of these signals. Each shows where the information comes from.",
+    "positive": "Positive signals",
+    "risks": "Risk signals",
+    "info": "Good to know",
+    "noRisks": "No risk signals found in the available evidence.",
+    "noPositive": "No positive signals yet.",
+    "evidenceTitle": "Evidence summary",
+    "evidenceTotal": "Evidence items",
+    "evidenceAccepted": "Accepted after review",
+    "evidencePending": "Awaiting review",
+    "evidenceBy": "By source",
+    "verifiedOn": "Verified on {date}",
+    "notVerified": "Not verified",
+    "lastUpdate": "Trust last updated {date}",
+    "methodology": "Scores are calculated by Trustora's rules from verified and observed evidence (method {version}). They are not generated by AI and are not a guarantee.",
+    "disclaimer": "Trust levels describe the evidence available today and can change over time. Trustora never claims a seller is 100% safe.",
+    "openPassport": "View Digital Trust Passport",
+    "storeLink": "Back to store",
+    "historyTitle": "Trust score over the last {days} days",
+    "historyIncreased": "Trust score increased from {from} to {to} during the last {days} days.",
+    "historyDecreased": "Trust score decreased from {from} to {to} during the last {days} days.",
+    "historyUnchanged": "Trust score unchanged at {to} during the last {days} days.",
+    "historyEmpty": "No trust history yet.",
+    "showTable": "Show as table",
+    "tableDate": "Date",
+    "tableScore": "Score",
+    "tableLevel": "Level",
+    "chartLabel": "Line chart of the trust score over time",
+    "pointsGained": "+{points, plural, one {# point} other {# points}}",
+    "pointsLost": "−{points, plural, one {# point} other {# points}}"
+  },
+  "smeTrust": {
+    "title": "Your Trust Passport",
+    "body": "This is what customers see. Your score updates automatically when evidence changes.",
+    "suggestionsTitle": "How to strengthen your trust",
+    "noSuggestions": "Nothing to add right now — keep completing orders well.",
+    "viewPublic": "View public passport"
+  },
+  "adminEvidence": {
+    "title": "Trust & evidence review",
+    "body": "Review authenticity evidence submitted by SMEs. Decisions update product authenticity and trust scores immediately and are audit-logged.",
+    "filterPENDING": "Awaiting review",
+    "filterACCEPTED": "Accepted",
+    "filterREJECTED": "Not accepted",
+    "empty": "No evidence in this list.",
+    "product": "Product",
+    "store": "Store",
+    "accept": "Accept",
+    "reject": "Reject",
+    "misleading": "Misleading (appears forged or does not match) — counts as a verified risk finding",
+    "note": "Review note",
+    "noteRequired": "Required when rejecting.",
+    "flaggedMisleading": "Flagged as misleading"
   }
 }

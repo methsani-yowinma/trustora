@@ -92,6 +92,17 @@ SEED = [
             "p3": json.dumps({"en": "Hidden test product"}),
         },
     ),
+    (
+        # Earlier trust history, so the passport can show a 30-day change and a chart.
+        # The current score is computed by the real trust engine on first view.
+        "insert into public.trust_score_history (sme_id, overall_score, level, business_score, "
+        "product_score, transaction_score, rules_version, trigger, created_at) values "
+        "('10000000-0000-4000-8000-000000000001', 72, 'TRUSTED', 85, 70, 60, 'seed', 'seed', "
+        "now() - interval '45 days'), "
+        "('10000000-0000-4000-8000-000000000001', 66, 'DEVELOPING', 80, 55, 55, 'seed', 'seed', "
+        "now() - interval '20 days')",
+        {},
+    ),
 ]
 
 

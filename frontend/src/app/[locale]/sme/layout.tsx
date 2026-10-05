@@ -18,6 +18,7 @@ export default async function SmeLayout({ children, params }: LayoutProps<"/[loc
           { href: "/sme/store", label: t("store") },
           { href: "/sme/products", label: t("products") },
           { href: "/sme/verification", label: t("verification") },
+          { href: "/sme/passport", label: t("passport") },
         ]}
       />
       {children}

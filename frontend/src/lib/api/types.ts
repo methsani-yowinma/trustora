@@ -154,3 +154,76 @@ export type AdminSocialAccount = OwnSocialAccount & {
   sme_slug: string;
   created_at: string;
 };
+
+// --- Trust (backend/app/trust/schemas.py) ----------------------------------------------
+export type TrustLevel = "VERIFIED" | "TRUSTED" | "DEVELOPING" | "CAUTION" | "HIGH_RISK";
+export type TrustDimension = "BUSINESS" | "PRODUCT" | "TRANSACTION";
+
+export type TrustScore = {
+  overall_score: number;
+  level: TrustLevel;
+  business_score: number;
+  product_score: number;
+  transaction_score: number;
+  rules_version: string;
+  computed_at: string;
+};
+
+export type TrustSignal = {
+  dimension: TrustDimension;
+  kind: "POSITIVE" | "RISK" | "INFO";
+  code: string;
+  points: number;
+  provenance: EvidenceProvenance;
+  params: Record<string, unknown>;
+  evidence_count: number;
+};
+
+export type EvidenceSummary = {
+  total: number;
+  accepted: number;
+  pending: number;
+  rejected: number;
+  by_provenance: Partial<Record<EvidenceProvenance, number>>;
+};
+
+export type TrustHistoryPoint = { at: string; overall_score: number; level: TrustLevel };
+
+export type TrustHistory = {
+  days: number;
+  baseline: TrustHistoryPoint | null;
+  points: TrustHistoryPoint[];
+  change: { from_score: number; to_score: number; from_level: TrustLevel; to_level: TrustLevel; days: number } | null;
+};
+
+export type Passport = {
+  store: {
+    id: string;
+    slug: string;
+    name: string;
+    logo_url: string | null;
+    description_i18n: LocalizedText | null;
+    verification_status: VerificationStatus;
+    verified_at: string | null;
+    member_since: string;
+  };
+  trust: TrustScore;
+  positive_signals: TrustSignal[];
+  risk_signals: TrustSignal[];
+  info_signals: TrustSignal[];
+  evidence_summary: EvidenceSummary;
+  history: TrustHistory;
+};
+
+export type TrustSuggestion = { code: string; params: Record<string, unknown> };
+export type SmeTrust = Passport & { suggestions: TrustSuggestion[] };
+
+export type AdminEvidenceItem = EvidenceFile & {
+  sme_id: string;
+  sme_name: string;
+  sme_slug: string;
+  product_id: string | null;
+  product_name_i18n: LocalizedText | null;
+  flagged_misleading: boolean;
+  review_note: string | null;
+};

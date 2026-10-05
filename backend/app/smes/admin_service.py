@@ -22,6 +22,8 @@ from app.smes.schemas import (
     VerificationDecisionIn,
 )
 from app.smes.service import SME_COLUMNS, build_sme_out, to_verification_summary
+from app.trust import trust_engine
+from app.trust.trust_inputs import SOCIAL_REVIEW_SOURCE
 
 _LIST_SQL = (
     "select v.id, v.status, v.business_reg_number, v.registered_name, v.submitted_at, "
@@ -164,13 +166,14 @@ async def decide_verification(
     await conn.execute(
         text(
             "update public.evidence set review_status = cast(:review as public.evidence_review_status), "
-            "reviewed_by = :admin, reviewed_at = now(), review_note = :note "
-            "where verification_id = :id"
+            "reviewed_by = :admin, reviewed_at = now(), review_note = :note, "
+            "flagged_misleading = :misleading where verification_id = :id"
         ),
         {
             "review": "ACCEPTED" if approved else "REJECTED",
             "admin": admin.id,
             "note": decision.note,
+            "misleading": decision.documents_misleading,
             "id": verification_id,
         },
     )
@@ -193,7 +196,14 @@ async def decide_verification(
         action="verification.approved" if approved else "verification.rejected",
         target_type="business_verification",
         target_id=verification_id,
-        metadata={"sme_id": str(row["sme_id"]), "contact_verified": decision.contact_verified},
+        metadata={
+            "sme_id": str(row["sme_id"]),
+            "contact_verified": decision.contact_verified,
+            "documents_misleading": decision.documents_misleading,
+        },
+    )
+    await trust_engine.recalculate(
+        conn, str(row["sme_id"]), trigger=f"verification.{decision.decision.lower()}", actor=admin
     )
     return await get_verification(conn, storage, verification_id)
 
@@ -258,7 +268,7 @@ async def decide_social_account(
             evidence_type="VERIFICATION_RESULT",
             provenance="VERIFIED_FACT",
             sme_id=str(row["sme_id"]),
-            source="ADMIN_REVIEW",
+            source=SOCIAL_REVIEW_SOURCE,
             description=f"Ownership of {row['platform']} account @{row['handle']} confirmed",
             created_by=admin.id,
         )
@@ -269,5 +279,8 @@ async def decide_social_account(
         target_type="social_account",
         target_id=account_id,
         metadata={"sme_id": str(row["sme_id"]), "platform": row["platform"]},
+    )
+    await trust_engine.recalculate(
+        conn, str(row["sme_id"]), trigger="social_account.decided", actor=admin
     )
     return (await list_social_accounts(conn, pending_only=False, account_id=account_id))[0]

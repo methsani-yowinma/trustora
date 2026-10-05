@@ -19,6 +19,9 @@ from app.products.router import router as sme_products_router
 from app.smes.router import admin_router as smes_admin_router
 from app.smes.router import public_router as stores_public_router
 from app.smes.router import router as smes_router
+from app.trust.router import admin_router as trust_admin_router
+from app.trust.router import public_router as trust_public_router
+from app.trust.router import sme_router as trust_sme_router
 from app.users.router import router as users_router
 
 logger = logging.getLogger("trustora")
@@ -96,6 +99,9 @@ def create_app(
     api.include_router(stores_public_router)
     api.include_router(products_public_router)
     api.include_router(smes_admin_router)
+    api.include_router(trust_public_router)
+    api.include_router(trust_sme_router)
+    api.include_router(trust_admin_router)
     app.include_router(health_router)
     app.include_router(api)
     return app

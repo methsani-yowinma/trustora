@@ -7,7 +7,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import type { AdminSocialAccount, AdminVerificationItem } from "@/lib/api/types";
+import type { AdminEvidenceItem, AdminSocialAccount, AdminVerificationItem } from "@/lib/api/types";
 import { requireRole, serverApi } from "@/lib/auth";
 
 export default async function AdminDashboardPage({ params }: PageProps<"/[locale]/admin">) {
@@ -21,27 +21,29 @@ export default async function AdminDashboardPage({ params }: PageProps<"/[locale
     getTranslations("admin.dashboard"),
     getTranslations("dashboard"),
   ]);
-  const [verifications, social] = await Promise.all([
+  const [verifications, social, evidence] = await Promise.all([
     serverApi<AdminVerificationItem[]>("/admin/verifications?status=SUBMITTED"),
     serverApi<AdminSocialAccount[]>("/admin/social-accounts?pending=true"),
+    serverApi<AdminEvidenceItem[]>("/admin/evidence?status=PENDING"),
   ]);
 
   const queues = [
-    { label: t("pendingVerifications"), count: verifications.length },
-    { label: t("pendingSocial"), count: social.length },
+    { label: t("pendingVerifications"), count: verifications.length, href: "/admin/verifications" },
+    { label: t("pendingSocial"), count: social.length, href: "/admin/verifications" },
+    { label: t("pendingEvidence"), count: evidence.length, href: "/admin/evidence" },
   ];
 
   return (
     <div className="space-y-6">
       <PageHeader title={tDashboard("adminTitle")} description={tDashboard("adminBody")} />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {queues.map((queue) => (
           <Card key={queue.label} className="flex items-center justify-between gap-4 p-5">
             <div>
               <p className="text-sm text-ink-muted">{queue.label}</p>
               <p className="mt-1 text-3xl font-semibold tabular-nums">{queue.count}</p>
             </div>
-            <Link href="/admin/verifications" className={buttonClasses("secondary")}>
+            <Link href={queue.href} className={buttonClasses("secondary")}>
               {t("review")}
             </Link>
           </Card>

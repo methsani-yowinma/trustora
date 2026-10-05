@@ -26,6 +26,7 @@ from app.products.schemas import (
     PublicProductOut,
 )
 from app.smes.service import require_own_sme
+from app.trust import trust_engine
 
 MAX_IMAGES_PER_PRODUCT = 8
 MAX_EVIDENCE_PER_PRODUCT = 10
@@ -192,6 +193,7 @@ async def create_product(
         target_id=product_id,
         metadata={"sme_id": str(sme["id"]), "price_lkr": str(data.price_lkr)},
     )
+    await trust_engine.recalculate(conn, str(sme["id"]), trigger="product.created", actor=user)
     return await get_own_product(conn, storage, user, product_id)
 
 
@@ -202,7 +204,7 @@ async def update_product(
     product_id: str,
     changes: ProductUpdate,
 ) -> ProductDetailOut:
-    _, product = await _require_own_product(conn, user, product_id, active_sme=True)
+    sme, product = await _require_own_product(conn, user, product_id, active_sme=True)
     values: dict[str, Any] = {}
     for field in changes.model_fields_set:
         value = getattr(changes, field)
@@ -240,18 +242,20 @@ async def update_product(
             target_id=product_id,
             metadata=metadata,
         )
+        await trust_engine.recalculate(conn, str(sme["id"]), trigger="product.updated", actor=user)
     return await get_own_product(conn, storage, user, product_id)
 
 
 async def remove_product(conn: AsyncConnection, user: CurrentUser, product_id: str) -> None:
     """Soft delete: the product disappears everywhere but stays referencable by past orders."""
-    _, product = await _require_own_product(conn, user, product_id)
+    sme, product = await _require_own_product(conn, user, product_id)
     await conn.execute(
         text("update public.products set status = 'REMOVED' where id = :id"), {"id": product["id"]}
     )
     await audit.record(
         conn, actor=user, action="product.removed", target_type="product", target_id=product_id
     )
+    await trust_engine.recalculate(conn, str(sme["id"]), trigger="product.removed", actor=user)
 
 
 # --- Images ------------------------------------------------------------------------
@@ -370,6 +374,7 @@ async def add_evidence(
             target_id=evidence_id,
             metadata={"product_id": product_id, "type": evidence_type.value, "sha256": file.sha256},
         )
+        await trust_engine.recalculate(conn, str(sme["id"]), trigger="evidence.created", actor=user)
     except Exception:
         await delete_quietly(storage, PRIVATE_BUCKET, [stored.path])
         raise

@@ -110,6 +110,15 @@ class UnconfiguredStorage(SupabaseStorage):
         raise StorageError("File storage is not configured", code="storage_not_configured")
 
 
+async def signed_url_or_none(storage: StorageClient, bucket: str, path: str) -> str | None:
+    """For lists: one missing or unsignable object must not break the whole response."""
+    try:
+        return await storage.signed_url(bucket, path)
+    except Exception:  # noqa: BLE001
+        logger.warning("Could not sign storage URL", extra={"bucket": bucket})
+        return None
+
+
 async def delete_quietly(storage: StorageClient, bucket: str, paths: list[str]) -> None:
     """Best-effort cleanup of objects whose database write failed or was rolled back."""
     try:

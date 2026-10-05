@@ -49,6 +49,18 @@ Helpers: `is_localized_text(jsonb, max)` (keys within {en, si}, non-empty string
 Storage buckets (created by the migration; no client policies on `storage.objects`):
 `public-media` (public URLs; images up to 5 MB) and `private-evidence` (signed URLs only; images/PDF up to 10 MB).
 
+## Phase 4 — Trust engine (`20261007000000_trust_engine.sql`)
+
+| Table | Purpose / key rules |
+| ----- | ------------------- |
+| `trust_scores` | Current score per SME: overall, level, three dimension scores, `rules_version`, aggregate `evidence_summary` (counts only), `computed_at`. |
+| `trust_signals` | The explanation behind the current score: dimension, kind (`POSITIVE`/`RISK`/`INFO`), code, points, provenance, params, evidence ids. Replaced on each recalculation. |
+| `trust_score_history` | Append-only: one row per change of score or level, with the `trigger` that caused it. Rows are only removed with their SME. |
+| `evidence.flagged_misleading` | Admin finding that rejected evidence is forged or mismatched (a verified risk finding). |
+
+All three trust tables are readable for public stores (anon), by the owning SME and by admins.
+No client role has any write grant: only the backend trust engine writes them.
+
 ## Access matrix (enforced by grants + RLS)
 
 | Table | anon | authenticated (self) | authenticated (admin) |
@@ -62,6 +74,7 @@ Storage buckets (created by the migration; no client policies on `storage.object
 | products | active products of public stores | select/insert/update own (not authenticity) | all |
 | product_images | images of public products | select own | select |
 | categories | select | select | select |
+| trust_scores / trust_signals / trust_score_history | public stores | public stores + own | all (read only) |
 
 No client role can insert profiles, evidence, verifications, social accounts or images, or write audit logs.
 These rules are covered by `backend/tests/test_rls.py` and `backend/tests/test_rls_sme.py`.

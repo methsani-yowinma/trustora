@@ -46,7 +46,7 @@ metadata). Signup may request CUSTOMER or SME; ADMIN is assigned manually in the
 | ----- | ------ |
 | 2 ✅ | `profiles`, `audit_logs` |
 | 3 ✅ | `smes` (incl. storefront fields), `sme_social_accounts`, `business_verifications`, `evidence`, `categories`, `products`, `product_images` |
-| 4 | `trust_scores`, `trust_score_history`, `trust_signals` |
+| 4 ✅ | `trust_scores`, `trust_score_history`, `trust_signals` |
 | 5 | `orders`, `order_items`, `payments`, `deliveries` |
 | 6 | `reviews`, `complaints` |
 
@@ -72,6 +72,9 @@ files are evidence from the moment they are uploaded.
 collect_inputs → trust_rules (pure functions) → trust_calculator → persist + history + audit
                                                                   → optional Gemini explanation
 ```
+
+Implemented as specified in [ADR 0007](../decisions/0007-trust-methodology.md) (rules, weights,
+levels and the two refinements made during implementation).
 
 Starting weights: Business 0.40 · Product 0.25 · Transaction 0.35, versioned in `trust_weights.py`.
 New sellers are pulled toward a neutral 50 on transaction trust until they have enough history.

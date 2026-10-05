@@ -26,6 +26,8 @@ const python =
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
+  // Each worker drives a browser against one local Next.js + API pair; more overloads laptops.
+  workers: process.env.CI ? 2 : 4,
   retries: process.env.CI ? 1 : 0,
   reporter: "list",
   use: {
