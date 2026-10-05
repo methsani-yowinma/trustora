@@ -2,6 +2,7 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,6 +13,12 @@ from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware
 from app.core.rate_limit import DEFAULT_LIMIT, rate_limit
 from app.core.security import TokenVerifier
+from app.core.storage import StorageClient, SupabaseStorage, UnconfiguredStorage
+from app.products.router import public_router as products_public_router
+from app.products.router import router as sme_products_router
+from app.smes.router import admin_router as smes_admin_router
+from app.smes.router import public_router as stores_public_router
+from app.smes.router import router as smes_router
 from app.users.router import router as users_router
 
 logger = logging.getLogger("trustora")
@@ -24,6 +31,7 @@ def create_app(
     *,
     db: Database | None = None,
     token_verifier: TokenVerifier | None = None,
+    storage: StorageClient | None = None,
 ) -> FastAPI:
     settings = settings or get_settings()
     configure_logging()
@@ -31,6 +39,7 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
+        await http_client.aclose()
         await app.state.db.dispose()
 
     app = FastAPI(
@@ -44,6 +53,14 @@ def create_app(
     app.state.settings = settings
     app.state.db = db or Database(create_engine(settings.async_database_url))
     app.state.token_verifier = token_verifier or TokenVerifier.from_settings(settings)
+
+    http_client = httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=5.0))
+    service_key = settings.supabase_service_role_key
+    app.state.storage = storage or (
+        SupabaseStorage(settings.storage_url, service_key.get_secret_value(), http_client)
+        if service_key
+        else UnconfiguredStorage(settings.storage_url)
+    )
 
     register_error_handlers(app)
 
@@ -74,6 +91,11 @@ def create_app(
         return {"status": "ok" if database == "ok" else "degraded", "database": database}
 
     api.include_router(users_router)
+    api.include_router(smes_router)
+    api.include_router(sme_products_router)
+    api.include_router(stores_public_router)
+    api.include_router(products_public_router)
+    api.include_router(smes_admin_router)
     app.include_router(health_router)
     app.include_router(api)
     return app

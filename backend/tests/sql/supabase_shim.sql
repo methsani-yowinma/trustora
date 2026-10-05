@@ -47,3 +47,14 @@ grant usage on schema public to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+
+-- Storage: only the buckets table that migrations insert into.
+create schema storage;
+create table storage.buckets (
+  id                 text primary key,
+  name               text not null unique,
+  public             boolean default false,
+  file_size_limit    bigint,
+  allowed_mime_types text[],
+  created_at         timestamptz default now()
+);

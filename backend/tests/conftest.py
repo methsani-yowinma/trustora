@@ -183,10 +183,42 @@ def settings(postgres_uri: str) -> Settings:
     )
 
 
+class FakeStorage:
+    """In-memory stand-in for Supabase Storage."""
+
+    def __init__(self) -> None:
+        self.objects: dict[tuple[str, str], tuple[bytes, str]] = {}
+
+    async def upload(self, bucket: str, path: str, data: bytes, content_type: str) -> None:
+        assert (bucket, path) not in self.objects, "uploads must never overwrite"
+        self.objects[(bucket, path)] = (data, content_type)
+
+    async def delete(self, bucket: str, paths: list[str]) -> None:
+        for path in paths:
+            self.objects.pop((bucket, path), None)
+
+    async def signed_url(self, bucket: str, path: str, expires_in: int = 300) -> str:
+        assert (bucket, path) in self.objects
+        return f"https://storage.test/sign/{bucket}/{path}?expires={expires_in}"
+
+    def public_url(self, bucket: str, path: str) -> str:
+        return f"https://storage.test/public/{bucket}/{path}"
+
+    def paths(self, bucket: str) -> list[str]:
+        return [p for b, p in self.objects if b == bucket]
+
+
 @pytest.fixture
-def app(settings: Settings, database: Database, token_verifier: TokenVerifier) -> Any:
+def storage() -> FakeStorage:
+    return FakeStorage()
+
+
+@pytest.fixture
+def app(
+    settings: Settings, database: Database, token_verifier: TokenVerifier, storage: FakeStorage
+) -> Any:
     reset_rate_limits()
-    return create_app(settings, db=database, token_verifier=token_verifier)
+    return create_app(settings, db=database, token_verifier=token_verifier, storage=storage)
 
 
 @pytest.fixture
@@ -198,3 +230,52 @@ async def client(app: Any) -> AsyncIterator[httpx.AsyncClient]:
 
 def bearer(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+# ---------------------------------------------------------------------------
+# Domain helpers
+# ---------------------------------------------------------------------------
+PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+JPEG_BYTES = b"\xff\xd8\xff\xe0" + b"\x00" * 64
+PDF_BYTES = b"%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\ntrailer\n%%EOF\n"
+
+
+@dataclass
+class Actor:
+    id: str
+    token: str
+
+    @property
+    def headers(self) -> dict[str, str]:
+        return bearer(self.token)
+
+
+@pytest.fixture
+def make_actor(create_user: UserFactory, make_token: TokenFactory) -> Callable[..., Any]:
+    async def _make(role: str = "CUSTOMER") -> Actor:
+        metadata = {"role": "SME"} if role == "SME" else {}
+        user = await create_user(metadata, role=role if role == "ADMIN" else None)
+        return Actor(id=user.id, token=make_token(user.id, email=user.email))
+
+    return _make
+
+
+@pytest.fixture
+def make_store(client: httpx.AsyncClient, make_actor: Callable[..., Any]) -> Callable[..., Any]:
+    """Creates an SME account with a registered (optionally published) store."""
+
+    async def _make(*, published: bool = False, **fields: Any) -> tuple[Actor, dict[str, Any]]:
+        owner = await make_actor("SME")
+        payload = {"slug": f"store-{uuid.uuid4().hex[:10]}", "name": "Lanka Crafts", **fields}
+        response = await client.post("/api/v1/smes", json=payload, headers=owner.headers)
+        assert response.status_code == 201, response.text
+        body = response.json()
+        if published:
+            response = await client.patch(
+                "/api/v1/smes/me", json={"is_published": True}, headers=owner.headers
+            )
+            assert response.status_code == 200, response.text
+            body = response.json()
+        return owner, body
+
+    return _make
