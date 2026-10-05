@@ -61,6 +61,18 @@ Storage buckets (created by the migration; no client policies on `storage.object
 All three trust tables are readable for public stores (anon), by the owning SME and by admins.
 No client role has any write grant: only the backend trust engine writes them.
 
+## Phase 5 — Commerce (`20261008000000_commerce.sql`)
+
+| Table | Purpose / key rules |
+| ----- | ------------------- |
+| `orders` | One SME per order. `order_number` (`TR-XXXXXXXX`), status (`PLACED` → `CONFIRMED` → `DISPATCHED` → `DELIVERED` → `COMPLETED`, or `CANCELLED` / `DELIVERY_FAILED`), money totals with `total = subtotal + delivery fee`, shipping-address snapshot, payment method, per-customer unique `idempotency_key`, timestamps per step, `cancelled_by`. |
+| `order_items` | Name and price snapshots, quantity 1–10, `line_total = unit_price × quantity`. |
+| `payments` | Sandbox: `COD` (paid on delivery) or `MOCK_CARD` (paid at checkout, refunded on cancellation/failure). No card data. |
+| `deliveries` | Provider abstraction (`SIMULATED`), district, fee, ETA days, tracking reference, estimated date and per-step timestamps, failure reason. |
+
+Clients can only **read** orders they are a party to (customer, the SME, admins); every write goes
+through the backend state machine.
+
 ## Access matrix (enforced by grants + RLS)
 
 | Table | anon | authenticated (self) | authenticated (admin) |
@@ -75,6 +87,7 @@ No client role has any write grant: only the backend trust engine writes them.
 | product_images | images of public products | select own | select |
 | categories | select | select | select |
 | trust_scores / trust_signals / trust_score_history | public stores | public stores + own | all (read only) |
+| orders / order_items / payments / deliveries | — | own orders (customer) or orders placed with own store (SME) — read only | all (read only) |
 
 No client role can insert profiles, evidence, verifications, social accounts or images, or write audit logs.
 These rules are covered by `backend/tests/test_rls.py` and `backend/tests/test_rls_sme.py`.

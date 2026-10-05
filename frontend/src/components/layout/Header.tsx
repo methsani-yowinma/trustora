@@ -1,6 +1,8 @@
+import { Package, Search } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { CartButton } from "@/components/commerce/CartButton";
 import { buttonClasses } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { Link } from "@/i18n/navigation";
@@ -22,6 +24,18 @@ export async function Header() {
         </Link>
 
         <nav aria-label={t("mainNavigation")} className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
+          {/* On small screens these collapse to icons so the header stays on one row. */}
+          <Link href="/discover" aria-label={t("discover")} className={buttonClasses("ghost", "px-2.5 sm:px-3")}>
+            <Search aria-hidden="true" className="h-5 w-5 sm:hidden" />
+            <span className="hidden sm:inline">{t("discover")}</span>
+          </Link>
+          {profile?.role === "CUSTOMER" ? (
+            <Link href="/orders" aria-label={t("orders")} className={buttonClasses("ghost", "px-2.5 md:px-3")}>
+              <Package aria-hidden="true" className="h-5 w-5 md:hidden" />
+              <span className="hidden md:inline">{t("orders")}</span>
+            </Link>
+          ) : null}
+          {!profile || profile.role === "CUSTOMER" ? <CartButton /> : null}
           {profile?.role === "SME" ? (
             <Link href="/sme" className={buttonClasses("ghost", "px-3")}>
               {t("smeDashboard")}

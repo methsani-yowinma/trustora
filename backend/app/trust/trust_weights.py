@@ -3,7 +3,7 @@
 Every stored score records the RULES_VERSION that produced it, so history stays interpretable.
 """
 
-RULES_VERSION = "2026.10-1"
+RULES_VERSION = "2026.10-2"
 
 # Overall score = weighted mean of the three dimensions.
 DIMENSION_WEIGHTS = {"BUSINESS": 0.40, "PRODUCT": 0.25, "TRANSACTION": 0.35}
@@ -35,12 +35,14 @@ AUTHENTICITY_VALUE = {
 }
 
 # --- Transaction trust ---------------------------------------------------------------
-# Observed performance starts at 100 and loses points for problems; it is then blended with
+# Observed performance is the success rate over seller-attributable outcomes (completed, failed,
+# seller-cancelled), adjusted for late deliveries, complaints and ratings; it is then blended with
 # NEUTRAL by sample size so a handful of orders cannot dominate: n / (n + PRIOR_ORDERS).
 PRIOR_ORDERS = 10
-FAILED_DELIVERY_RATE_WEIGHT = 50
+# A failed delivery or seller cancellation removes its full share of the success rate.
+FAILED_DELIVERY_RATE_WEIGHT = 100
 LATE_DELIVERY_RATE_WEIGHT = 20
-SELLER_CANCELLATION_RATE_WEIGHT = 30
+SELLER_CANCELLATION_RATE_WEIGHT = 100
 UPHELD_COMPLAINT_EACH = -10
 UPHELD_COMPLAINT_MAX = -40
 OVERDUE_COMPLAINT_EACH = -5

@@ -179,7 +179,9 @@ def _rate(part: int, whole: int) -> float:
 
 def transaction_rules(stats: TransactionStats) -> DimensionResult:
     n = stats.completed_orders
-    if n == 0:
+    # Every order outcome the seller is responsible for counts toward the sample.
+    outcomes = n + stats.failed_deliveries + stats.seller_cancellations
+    if outcomes == 0:
         return DimensionResult(
             score=w.NEUTRAL,
             signals=(
@@ -194,14 +196,22 @@ def transaction_rules(stats: TransactionStats) -> DimensionResult:
             ),
         )
 
-    # Sample-size weight: observed performance counts more as completed orders accumulate.
-    weight = n / (n + w.PRIOR_ORDERS)
+    # Sample-size weight: observed performance counts more as outcomes accumulate.
+    weight = outcomes / (outcomes + w.PRIOR_ORDERS)
+    # Observed performance = success rate (×100), less late-delivery, complaint and rating
+    # adjustments. Expressed relative to neutral: completed orders contribute +50, and each
+    # failed delivery or seller cancellation removes its share of the outcomes.
     raw: list[tuple[str, str, float, str, dict[str, object]]] = [
-        ("POSITIVE", "COMPLETED_ORDERS", 100 - w.NEUTRAL, "PLATFORM_STATISTIC", {"count": n}),
+        (
+            "POSITIVE" if n else "INFO",
+            "COMPLETED_ORDERS",
+            100 - w.NEUTRAL,
+            "PLATFORM_STATISTIC",
+            {"count": n},
+        ),
     ]
-
-    failed = _rate(stats.failed_deliveries, n + stats.failed_deliveries)
     if stats.failed_deliveries:
+        failed = stats.failed_deliveries / outcomes
         raw.append(
             (
                 "RISK",
@@ -209,6 +219,17 @@ def transaction_rules(stats: TransactionStats) -> DimensionResult:
                 -w.FAILED_DELIVERY_RATE_WEIGHT * failed,
                 "PLATFORM_STATISTIC",
                 {"count": stats.failed_deliveries, "rate": round(failed, 3)},
+            )
+        )
+    if stats.seller_cancellations:
+        cancelled = stats.seller_cancellations / outcomes
+        raw.append(
+            (
+                "RISK",
+                "SELLER_CANCELLATIONS",
+                -w.SELLER_CANCELLATION_RATE_WEIGHT * cancelled,
+                "PLATFORM_STATISTIC",
+                {"count": stats.seller_cancellations, "rate": round(cancelled, 3)},
             )
         )
     late = _rate(stats.late_deliveries, n)
@@ -220,17 +241,6 @@ def transaction_rules(stats: TransactionStats) -> DimensionResult:
                 -w.LATE_DELIVERY_RATE_WEIGHT * late,
                 "PLATFORM_STATISTIC",
                 {"count": stats.late_deliveries, "rate": round(late, 3)},
-            )
-        )
-    cancelled = _rate(stats.seller_cancellations, n + stats.seller_cancellations)
-    if stats.seller_cancellations:
-        raw.append(
-            (
-                "RISK",
-                "SELLER_CANCELLATIONS",
-                -w.SELLER_CANCELLATION_RATE_WEIGHT * cancelled,
-                "PLATFORM_STATISTIC",
-                {"count": stats.seller_cancellations, "rate": round(cancelled, 3)},
             )
         )
     if stats.upheld_complaints:

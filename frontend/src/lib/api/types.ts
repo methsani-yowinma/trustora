@@ -227,3 +227,123 @@ export type AdminEvidenceItem = EvidenceFile & {
   flagged_misleading: boolean;
   review_note: string | null;
 };
+
+// --- Commerce (backend/app/orders, backend/app/products/browse.py) -------------------------
+export type StoreBadge = {
+  id: string;
+  slug: string;
+  name: string;
+  verification_status: VerificationStatus;
+  trust_level: TrustLevel | null;
+  trust_score: number | null;
+};
+
+export type ProductCard = {
+  id: string;
+  category_id: number;
+  name_i18n: LocalizedText;
+  price_lkr: string;
+  in_stock: boolean;
+  authenticity_status: AuthenticityStatus;
+  image_url: string | null;
+  store: StoreBadge;
+};
+
+export type Paged<T> = { items: T[]; total: number; page: number; page_size: number };
+
+export type PublicProductDetail = PublicProduct & { store: StoreBadge; max_quantity: number };
+
+export type StoreCard = {
+  id: string;
+  slug: string;
+  name: string;
+  logo_url: string | null;
+  description_i18n: LocalizedText | null;
+  verification_status: VerificationStatus;
+  trust_level: TrustLevel | null;
+  trust_score: number | null;
+  product_count: number;
+};
+
+export type Quote = {
+  store: StoreBadge;
+  lines: {
+    product_id: string;
+    name_i18n: LocalizedText;
+    image_url: string | null;
+    unit_price_lkr: string;
+    quantity: number;
+    line_total_lkr: string;
+    available: boolean;
+    in_stock_quantity_ok: boolean;
+  }[];
+  subtotal_lkr: string;
+  delivery: { provider_code: string; fee_lkr: string; eta_days: number };
+  total_lkr: string;
+  issues: string[];
+};
+
+export type OrderStatus =
+  | "PLACED"
+  | "CONFIRMED"
+  | "DISPATCHED"
+  | "DELIVERED"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "DELIVERY_FAILED";
+export type DeliveryStatus = "PENDING" | "DISPATCHED" | "IN_TRANSIT" | "DELIVERED" | "FAILED";
+
+export type Order = {
+  id: string;
+  order_number: string;
+  status: OrderStatus;
+  store: StoreBadge;
+  items: { product_id: string; product_name_i18n: LocalizedText; unit_price_lkr: string; quantity: number; line_total_lkr: string }[];
+  subtotal_lkr: string;
+  delivery_fee_lkr: string;
+  total_lkr: string;
+  shipping_address: Record<string, string | null>;
+  payment: {
+    method: "COD" | "MOCK_CARD";
+    status: "PENDING" | "PAID" | "REFUNDED";
+    amount_lkr: string;
+    mock_reference: string | null;
+    paid_at: string | null;
+    refunded_at: string | null;
+  };
+  delivery: {
+    provider_code: string;
+    district: string;
+    fee_lkr: string;
+    eta_days: number;
+    status: DeliveryStatus;
+    tracking_ref: string | null;
+    estimated_delivery_date: string | null;
+    dispatched_at: string | null;
+    in_transit_at: string | null;
+    delivered_at: string | null;
+    failed_at: string | null;
+    failure_reason: string | null;
+  };
+  placed_at: string;
+  confirmed_at: string | null;
+  dispatched_at: string | null;
+  delivered_at: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  cancelled_by: "CUSTOMER" | "SME" | "ADMIN" | null;
+  cancellation_reason: string | null;
+  allowed_actions: string[];
+};
+
+export type OrderSummary = {
+  id: string;
+  order_number: string;
+  status: OrderStatus;
+  store_name: string;
+  store_slug: string;
+  total_lkr: string;
+  item_count: number;
+  placed_at: string;
+  delivery_status: DeliveryStatus;
+};

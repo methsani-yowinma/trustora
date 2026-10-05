@@ -302,3 +302,19 @@ def test_history_summary() -> None:
     unchanged = summarize([], baseline, 30)
     assert (unchanged.change.from_score, unchanged.change.to_score) == (91, 91)
     assert summarize([], None, 30).change is None
+
+
+def test_problems_count_before_the_first_completed_order() -> None:
+    result = transaction_rules(TransactionStats(failed_deliveries=1, seller_cancellations=1))
+    assert result.score < w.NEUTRAL
+    assert {"DELIVERY_FAILURES", "SELLER_CANCELLATIONS", "LIMITED_TRANSACTION_HISTORY"} <= codes(
+        result.signals
+    )
+    completed = next(s for s in result.signals if s.code == "COMPLETED_ORDERS")
+    assert completed.kind == "INFO" and completed.params == {"count": 0}
+
+
+def test_success_rate_drives_observed_transaction_trust() -> None:
+    reliable = transaction_rules(TransactionStats(completed_orders=40))
+    half_failed = transaction_rules(TransactionStats(completed_orders=20, failed_deliveries=20))
+    assert reliable.score > w.NEUTRAL >= half_failed.score
