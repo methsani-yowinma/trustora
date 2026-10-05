@@ -5,12 +5,15 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { AuthenticityBadge, VerificationBadge } from "@/components/trust/StatusBadges";
+import { TrustScoreCard } from "@/components/trust/TrustScoreCard";
+import { buttonClasses } from "@/components/ui/Button";
+import { Link } from "@/i18n/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Card";
 import { RemoteImage } from "@/components/ui/RemoteImage";
 import type { Locale } from "@/i18n/routing";
 import { ApiError, apiFetch } from "@/lib/api/client";
-import type { PolicyKey, PublicProduct, PublicStore } from "@/lib/api/types";
+import type { Passport, PolicyKey, PublicProduct, PublicStore } from "@/lib/api/types";
 import { formatDate, formatLkr, localize } from "@/lib/localize";
 
 const SLUG = /^[A-Za-z0-9-]{3,40}$/;
@@ -20,11 +23,12 @@ const POLICY_KEYS: PolicyKey[] = ["returns", "refunds", "delivery"];
 const loadStore = cache(async (slug: string) => {
   if (!SLUG.test(slug)) return null;
   try {
-    const [store, products] = await Promise.all([
+    const [store, products, passport] = await Promise.all([
       apiFetch<PublicStore>(`/stores/${slug}`),
       apiFetch<PublicProduct[]>(`/stores/${slug}/products`),
+      apiFetch<Passport>(`/stores/${slug}/passport`),
     ]);
-    return { store, products };
+    return { store, products, passport };
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
@@ -67,7 +71,8 @@ export default async function StorePage({ params }: PageProps<"/[locale]/stores/
     );
   }
   if (!data) notFound();
-  const { store, products } = data;
+  const { store, products, passport } = data;
+  const tPassport = await getTranslations("passport");
 
   const description = localize(store.description_i18n, locale);
   const policies = POLICY_KEYS.flatMap((key) => {
@@ -101,6 +106,13 @@ export default async function StorePage({ params }: PageProps<"/[locale]/stores/
           {t("notVerifiedHint")}
         </Alert>
       ) : null}
+
+      <section aria-label={tPassport("title")} className="space-y-3">
+        <TrustScoreCard trust={passport.trust} compact />
+        <Link href={`/stores/${store.slug}/passport`} className={buttonClasses("secondary")}>
+          {tPassport("openPassport")}
+        </Link>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <section aria-labelledby="products-title" className="space-y-4">
@@ -220,7 +232,6 @@ export default async function StorePage({ params }: PageProps<"/[locale]/stores/
             {t("fallbackLanguage")}
           </p>
         ) : null}
-        <p>{t("trustPassportSoon")}</p>
       </div>
     </div>
   );

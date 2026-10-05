@@ -31,6 +31,7 @@ export function VerificationDecisionForm({ verificationId }: { verificationId: s
           decision,
           note: note || undefined,
           contact_verified: decision === "APPROVED" && form.get("contact_verified") === "on",
+          documents_misleading: decision === "REJECTED" && form.get("documents_misleading") === "on",
         },
       }),
     );
@@ -53,6 +54,10 @@ export function VerificationDecisionForm({ verificationId }: { verificationId: s
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="contact_verified" className="h-4 w-4 accent-brand-600" />
           {t("contactVerified")}
+        </label>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" name="documents_misleading" className="mt-0.5 h-4 w-4 accent-brand-600" />
+          {t("documentsMisleading")}
         </label>
         <TextAreaField label={t("note")} name="note" rows={3} maxLength={1000} hint={t("noteRequired")} error={noteError} />
         {error ? <Alert tone="error">{error}</Alert> : null}

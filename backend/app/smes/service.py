@@ -28,6 +28,7 @@ from app.smes.schemas import (
     VerificationOut,
     VerificationSummary,
 )
+from app.trust import trust_engine
 
 MAX_SOCIAL_ACCOUNTS = 10
 MAX_VERIFICATION_DOCUMENTS = 5
@@ -187,6 +188,7 @@ async def register_sme(
         target_id=str(row["id"]),
         metadata={"slug": data.slug},
     )
+    await trust_engine.recalculate(conn, str(row["id"]), trigger="sme.registered", actor=user)
     return await build_sme_out(conn, storage, row)
 
 
@@ -223,6 +225,7 @@ async def update_own_sme(
             target_id=str(current["id"]),
             metadata={"fields": sorted(values)},
         )
+        await trust_engine.recalculate(conn, str(current["id"]), trigger="sme.updated", actor=user)
 
     return await build_sme_out(conn, storage, await require_own_sme(conn, user))
 
@@ -246,6 +249,9 @@ async def update_logo(
             target_type="sme",
             target_id=str(current["id"]),
             metadata={"sha256": file.sha256},
+        )
+        await trust_engine.recalculate(
+            conn, str(current["id"]), trigger="sme.logo_updated", actor=user
         )
     except Exception:
         await delete_quietly(storage, PUBLIC_BUCKET, [path])
@@ -319,7 +325,7 @@ async def add_social_account(
 
 
 async def delete_social_account(conn: AsyncConnection, user: CurrentUser, account_id: str) -> None:
-    await require_own_sme(conn, user)
+    sme = await require_own_sme(conn, user)
     result = await conn.execute(
         text("delete from public.sme_social_accounts where id = :id returning platform, handle"),
         {"id": account_id},
@@ -334,6 +340,9 @@ async def delete_social_account(conn: AsyncConnection, user: CurrentUser, accoun
         target_type="social_account",
         target_id=account_id,
         metadata=dict(removed),
+    )
+    await trust_engine.recalculate(
+        conn, str(sme["id"]), trigger="social_account.removed", actor=user
     )
 
 
@@ -436,6 +445,9 @@ async def submit_verification(
             target_type="business_verification",
             target_id=verification_id,
             metadata={"sme_id": str(sme["id"]), "documents": [f.sha256 for f in files]},
+        )
+        await trust_engine.recalculate(
+            conn, str(sme["id"]), trigger="verification.submitted", actor=user
         )
     except Exception:
         await delete_quietly(storage, PRIVATE_BUCKET, uploaded)

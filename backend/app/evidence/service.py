@@ -10,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.core.db import Database
-from app.core.storage import PRIVATE_BUCKET, StorageClient
+from app.core.storage import PRIVATE_BUCKET, StorageClient, signed_url_or_none
 from app.core.uploads import ValidatedFile
 from app.evidence.schemas import EvidenceFileOut
 
@@ -140,7 +140,7 @@ async def list_evidence(
     for row in rows:
         url = None
         if with_download_urls and row["storage_path"]:
-            url = await storage.signed_url(PRIVATE_BUCKET, row["storage_path"])
+            url = await signed_url_or_none(storage, PRIVATE_BUCKET, row["storage_path"])
         items.append(
             EvidenceFileOut(
                 **{k: v for k, v in row.items() if k not in ("id", "storage_path")},
