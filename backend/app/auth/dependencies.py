@@ -17,12 +17,17 @@ from app.auth.models import CurrentUser, UserRole
 from app.core.db import Database
 from app.core.errors import ForbiddenError, UnauthorizedError
 from app.core.security import AuthClaims, TokenVerifier
+from app.core.storage import StorageClient
 
 _bearer = HTTPBearer(auto_error=False)
 
 
 def get_database(request: Request) -> Database:
     return request.app.state.db
+
+
+def get_storage(request: Request) -> StorageClient:
+    return request.app.state.storage
 
 
 async def get_auth_claims(
@@ -41,6 +46,12 @@ async def get_user_db(
 ) -> AsyncIterator[AsyncConnection]:
     """One RLS-scoped transaction per request, committed when the route succeeds."""
     async with db.user_transaction(claims) as conn:
+        yield conn
+
+
+async def get_anon_db(db: Database = Depends(get_database)) -> AsyncIterator[AsyncConnection]:
+    """Transaction for public endpoints; public RLS policies apply."""
+    async with db.anon_transaction() as conn:
         yield conn
 
 

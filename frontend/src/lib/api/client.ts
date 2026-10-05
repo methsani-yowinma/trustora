@@ -15,6 +15,7 @@ export class ApiError extends Error {
 type ApiOptions = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   token?: string | null;
+  /** JSON-serialisable body, or FormData for file uploads. */
   body?: unknown;
   signal?: AbortSignal;
 };
@@ -23,14 +24,21 @@ type ApiOptions = {
 export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (options.token) headers.Authorization = `Bearer ${options.token}`;
-  if (options.body !== undefined) headers["Content-Type"] = "application/json";
+
+  let body: BodyInit | undefined;
+  if (options.body instanceof FormData) {
+    body = options.body; // the browser sets the multipart boundary
+  } else if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(options.body);
+  }
 
   let response: Response;
   try {
     response = await fetch(`${publicEnv.apiUrl}/api/v1${path}`, {
       method: options.method ?? "GET",
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body,
       signal: options.signal,
       cache: "no-store",
     });

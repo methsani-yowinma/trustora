@@ -30,8 +30,9 @@ trustora/
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | 1 | Architecture | ✅ Approved |
-| 2 | Foundation: setup, DB, Supabase config, auth, roles, base UI, env | ✅ Implemented |
-| 3–10 | SME · Trust Engine · Commerce · Customer Trust · Gemini · Trustora AI · Security · Testing | Pending |
+| 2 | Foundation: setup, DB, Supabase config, auth, roles, base UI, env | ✅ Approved |
+| 3 | SME registration, verification, store, product management | ✅ Implemented |
+| 4–10 | Trust Engine · Commerce · Customer Trust · Gemini · Trustora AI · Security · Testing | Pending |
 
 ## Prerequisites
 
@@ -67,6 +68,8 @@ uvicorn app.main:create_app --factory --reload --port 8000
 ```
 
 - `DATABASE_URL`: Supabase → **Connect** → *Session pooler* connection string.
+- `SUPABASE_SERVICE_ROLE_KEY`: required for uploads (logos, product images, verification documents).
+  The migration creates the `public-media` and `private-evidence` Storage buckets.
 - `SUPABASE_JWT_SECRET`: only for projects still signing tokens with the legacy HS256 secret.
   Projects using JWT signing keys are verified automatically through JWKS.
 - API docs (development only): <http://localhost:8000/docs>. Health: `GET /api/v1/health`.
@@ -83,7 +86,7 @@ npm run dev                       # http://localhost:3000 → redirects to /en
 ## Testing
 
 ```bash
-# Backend: 53 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
+# Backend: 150 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
 cd backend && pytest
 ruff check . && ruff format --check .
 
@@ -91,7 +94,7 @@ ruff check . && ruff format --check .
 cd frontend
 npm run lint && npm run typecheck && npm run check:i18n
 npx playwright install chromium   # or use an installed browser: PW_CHANNEL=msedge
-npm run test:e2e                  # builds, starts on :3100, runs desktop + mobile smoke tests
+npm run test:e2e                  # seeded API (backend/tests/e2e_server.py) + app; desktop + mobile
 ```
 
 A Postman collection is in [postman/](postman/).

@@ -44,6 +44,10 @@ class Settings(BaseSettings):
         return url
 
     @property
+    def storage_url(self) -> str:
+        return f"{self.supabase_url}/storage/v1"
+
+    @property
     def jwt_issuer(self) -> str:
         return f"{self.supabase_url}/auth/v1"
 

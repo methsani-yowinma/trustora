@@ -5,7 +5,7 @@ import { cache } from "react";
 import { redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ApiError, apiFetch } from "@/lib/api/client";
-import type { Profile, UserRole } from "@/lib/api/types";
+import type { Profile, Sme, UserRole } from "@/lib/api/types";
 import { createClient } from "@/lib/supabase/server";
 
 export type SessionState =
@@ -17,10 +17,14 @@ export type SessionState =
  * Resolves the signed-in user's Trustora profile via the API (which verifies the JWT).
  * Cached per request.
  */
-export const getSession = cache(async (): Promise<SessionState> => {
+const getAccessToken = cache(async (): Promise<string | null> => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  return data.session?.access_token ?? null;
+});
+
+export const getSession = cache(async (): Promise<SessionState> => {
+  const token = await getAccessToken();
   if (!token) return { status: "anonymous" };
 
   try {
@@ -55,3 +59,18 @@ export async function requireRole(
     ? { kind: "allowed", profile: session.profile }
     : { kind: "forbidden" };
 }
+
+/** Authenticated API call from Server Components (the API verifies the token). */
+export async function serverApi<T>(path: string): Promise<T> {
+  return apiFetch<T>(path, { token: await getAccessToken() });
+}
+
+/** The signed-in SME's own store, or null if they have not registered one yet. */
+export const getOwnSme = cache(async (): Promise<Sme | null> => {
+  try {
+    return await serverApi<Sme>("/smes/me");
+  } catch (error) {
+    if (error instanceof ApiError && error.code === "sme_not_registered") return null;
+    throw error;
+  }
+});
