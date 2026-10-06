@@ -17,6 +17,7 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
           { href: "/admin", label: t("dashboard"), exact: true },
           { href: "/admin/verifications", label: t("verifications") },
           { href: "/admin/evidence", label: t("evidence") },
+          { href: "/admin/complaints", label: t("complaints") },
         ]}
       />
       {children}

@@ -33,8 +33,9 @@ trustora/
 | 2 | Foundation: setup, DB, Supabase config, auth, roles, base UI, env | ✅ Approved |
 | 3 | SME registration, verification, store, product management | ✅ Approved |
 | 4 | Trust Engine: evidence review, rules, calculation, Trust Passport, history | ✅ Approved |
-| 5 | Commerce: browsing, cart, checkout, orders, delivery status | ✅ Implemented |
-| 6–10 | Customer Trust · Gemini · Trustora AI · Security · Testing | Pending |
+| 5 | Commerce: browsing, cart, checkout, orders, delivery status | ✅ Approved |
+| 6 | Customer Trust: reviews, complaints, evidence workflows, trust explanations | ✅ Implemented |
+| 7–10 | Gemini · Trustora AI · Security · Testing | Pending |
 
 ## Prerequisites
 
@@ -92,7 +93,7 @@ npm run dev                       # http://localhost:3000 → redirects to /en
 ## Testing
 
 ```bash
-# Backend: 237 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
+# Backend: 258 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
 cd backend && pytest
 ruff check . && ruff format --check .
 

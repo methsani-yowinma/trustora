@@ -70,6 +70,20 @@ async def collect_inputs(conn: AsyncConnection, sme_id: str) -> tuple[TrustInput
         .all()
     )
 
+    upheld_authenticity = dict(
+        (
+            await conn.execute(
+                text(
+                    "select i.product_id, count(distinct c.id) from public.complaints c "
+                    "join public.order_items i on i.order_id = c.order_id "
+                    "where c.sme_id = :id and c.status = 'UPHELD' "
+                    "and c.category = 'PRODUCT_AUTHENTICITY' group by i.product_id"
+                ),
+                {"id": sme_id},
+            )
+        ).all()
+    )
+
     by_product: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
     verification_ids, social_ids, misleading_ids = [], [], []
     for e in evidence_rows:
@@ -111,6 +125,7 @@ async def collect_inputs(conn: AsyncConnection, sme_id: str) -> tuple[TrustInput
                 accepted_document_ids=tuple(by_product[str(p["id"])]["documents"]),
                 accepted_image_ids=tuple(by_product[str(p["id"])]["images"]),
                 misleading_ids=tuple(by_product[str(p["id"])]["misleading"]),
+                upheld_authenticity_complaints=upheld_authenticity.get(p["id"], 0),
                 active=p["status"] == "ACTIVE",
             )
             for p in products
@@ -121,7 +136,7 @@ async def collect_inputs(conn: AsyncConnection, sme_id: str) -> tuple[TrustInput
 
 
 async def _transaction_stats(conn: AsyncConnection, sme_id: str) -> TransactionStats:
-    """Order and delivery outcomes. Reviews and complaints are added in Phase 6."""
+    """Order, delivery, complaint and verified-review outcomes."""
     row = (
         (
             await conn.execute(
@@ -142,11 +157,49 @@ async def _transaction_stats(conn: AsyncConnection, sme_id: str) -> TransactionS
         .mappings()
         .one()
     )
+    complaints = (
+        (
+            await conn.execute(
+                text(
+                    "select "
+                    "count(*) filter (where status = 'UPHELD') as upheld, "
+                    "count(*) filter (where status = 'UPHELD' and decided_at > now() - interval '90 days') "
+                    "  as upheld_90d, "
+                    # No seller response within 14 days.
+                    "count(*) filter (where status = 'SUBMITTED' and created_at < now() - interval '14 days') "
+                    "  as overdue, "
+                    "count(*) filter (where status in ('SUBMITTED', 'SME_RESPONDED', 'UNDER_REVIEW')) as open "
+                    "from public.complaints where sme_id = :id"
+                ),
+                {"id": sme_id},
+            )
+        )
+        .mappings()
+        .one()
+    )
+    reviews = (
+        (
+            await conn.execute(
+                text(
+                    "select count(*) as n, avg(rating)::float as average from public.reviews where sme_id = :id"
+                ),
+                {"id": sme_id},
+            )
+        )
+        .mappings()
+        .one()
+    )
     return TransactionStats(
         completed_orders=row["completed"],
         failed_deliveries=row["failed"],
         late_deliveries=row["late"],
         seller_cancellations=row["seller_cancelled"],
+        upheld_complaints=complaints["upheld"],
+        upheld_complaints_90d=complaints["upheld_90d"],
+        overdue_unresolved_complaints=complaints["overdue"],
+        open_complaints=complaints["open"],
+        verified_review_count=reviews["n"],
+        verified_review_average=reviews["average"],
     )
 
 

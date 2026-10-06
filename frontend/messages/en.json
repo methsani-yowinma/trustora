@@ -157,7 +157,10 @@
     "multiple_stores": "A cart can only contain products from one store.",
     "cart_unavailable": "These products are no longer available.",
     "invalid_transition": "That action is not possible for this order right now.",
-    "duplicate_submission": "This order was already submitted."
+    "duplicate_submission": "This order was already submitted.",
+    "review_not_allowed": "Only delivered orders can be reviewed, once, within 90 days.",
+    "complaint_open": "This order already has an open complaint.",
+    "complaint_window_closed": "Complaints can be raised within 90 days of the order."
   },
   "verificationStatus": {
     "UNVERIFIED": "Not verified",
@@ -203,7 +206,9 @@
       "products": "Products",
       "verification": "Verification",
       "passport": "Trust Passport",
-      "orders": "Orders"
+      "orders": "Orders",
+      "reviews": "Reviews",
+      "complaints": "Complaints"
     },
     "onboarding": {
       "title": "Register your business",
@@ -340,13 +345,15 @@
       "label": "Admin navigation",
       "dashboard": "Overview",
       "verifications": "SME verification",
-      "evidence": "Trust & evidence"
+      "evidence": "Trust & evidence",
+      "complaints": "Complaints"
     },
     "dashboard": {
       "pendingVerifications": "Verification requests awaiting review",
       "pendingSocial": "Social accounts awaiting confirmation",
       "review": "Review",
-      "pendingEvidence": "Evidence awaiting review"
+      "pendingEvidence": "Evidence awaiting review",
+      "pendingComplaints": "Escalated complaints awaiting a decision"
     },
     "verifications": {
       "title": "SME verification",
@@ -435,9 +442,10 @@
     "LATE_DELIVERIES": "{count} late deliveries",
     "SELLER_CANCELLATIONS": "{count} orders cancelled by the seller",
     "UPHELD_COMPLAINTS": "{count} customer complaints upheld after review",
-    "UNRESOLVED_COMPLAINTS": "{count} complaints unresolved for more than 14 days",
+    "UNRESOLVED_COMPLAINTS": "{count} complaints without a seller response for more than 14 days",
     "VERIFIED_REVIEW_RATING": "Average rating {average} from {count} verified buyers",
-    "unknown": "Other signal"
+    "unknown": "Other signal",
+    "OPEN_COMPLAINTS": "{count, plural, one {# open customer complaint} other {# open customer complaints}} (allegations, not yet reviewed)"
   },
   "trustSuggestions": {
     "RESOLVE_MISLEADING_EVIDENCE": "Some of your evidence was found to be misleading. Contact Trustora support to resolve it.",
@@ -447,7 +455,8 @@
     "COMPLETE_PROFILE": "Add a logo and a store description.",
     "ADD_PRODUCTS": "Add your first product.",
     "ADD_PRODUCT_EVIDENCE": "Upload authenticity evidence for {count, plural, one {# product} other {# products}}.",
-    "BUILD_TRANSACTION_HISTORY": "Complete orders on Trustora to build transaction trust."
+    "BUILD_TRANSACTION_HISTORY": "Complete orders on Trustora to build transaction trust.",
+    "RESPOND_TO_COMPLAINTS": "Respond to open customer complaints."
   },
   "passport": {
     "title": "Digital Trust Passport",
@@ -693,5 +702,114 @@
     "cancel": "Cancel order",
     "reasonRequired": "A reason is required for this action.",
     "trustNote": "Deliveries, failed deliveries and cancellations by you update your transaction trust."
+  },
+  "complaintCategory": {
+    "DELIVERY": "Delivery",
+    "WRONG_PRODUCT": "Wrong product",
+    "PRODUCT_AUTHENTICITY": "Product authenticity",
+    "REFUND": "Refund",
+    "PAYMENT": "Payment",
+    "CUSTOMER_SERVICE": "Customer service",
+    "PRODUCT_QUALITY": "Product quality",
+    "OTHER": "Other"
+  },
+  "complaintStatus": {
+    "SUBMITTED": "Awaiting seller response",
+    "SME_RESPONDED": "Seller responded",
+    "UNDER_REVIEW": "Under Trustora review",
+    "RESOLVED": "Resolved",
+    "UPHELD": "Upheld after review",
+    "DISMISSED": "Dismissed after review"
+  },
+  "reviews": {
+    "title": "Verified buyer reviews",
+    "verifiedBuyer": "Verified buyer",
+    "average": "{average} out of 5",
+    "count": "{count, plural, =0 {No reviews yet} one {# review} other {# reviews}}",
+    "empty": "No reviews yet. Only customers who received an order through Trustora can review.",
+    "stars": "{rating, plural, one {# star} other {# stars}}",
+    "sellerResponse": "Seller response",
+    "writeTitle": "Review this order",
+    "writeBody": "Your review is shown as a verified buyer review. Your name is not shown.",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submit": "Post review",
+    "yours": "Your review",
+    "distribution": "Rating distribution"
+  },
+  "complaints": {
+    "reportTitle": "Report a problem with this order",
+    "reportBody": "Describe what went wrong. The seller is asked to respond first. If you are not satisfied, you can ask Trustora to review it.",
+    "allegationNotice": "Until Trustora reviews it, a complaint is shown publicly only as a customer allegation — never as a proven fact — and does not change the seller's trust score.",
+    "category": "What is the problem about?",
+    "chooseCategory": "Choose a category",
+    "description": "What happened?",
+    "descriptionHint": "At least 10 characters. Do not include passwords or card numbers.",
+    "attachments": "Photos or documents",
+    "attachmentsHint": "Optional, up to 3 files (JPG, PNG, WEBP or PDF).",
+    "submit": "Submit complaint",
+    "title": "Complaint",
+    "yourComplaint": "Your complaint",
+    "submittedOn": "Submitted {date}",
+    "sellerResponse": "Seller response",
+    "noResponse": "The seller has not responded yet.",
+    "decision": "Trustora decision",
+    "resolve": "My problem is resolved",
+    "escalate": "Ask Trustora to review",
+    "escalateConfirm": "Ask Trustora to review this complaint? An administrator will look at both sides and the evidence.",
+    "addEvidence": "Add evidence",
+    "evidenceTitle": "Evidence",
+    "evidenceNote": "What does this show?",
+    "noEvidence": "No evidence attached.",
+    "underReview": "Trustora is reviewing this complaint.",
+    "fromCustomer": "Customer's account (allegation)"
+  },
+  "publicComplaints": {
+    "title": "Complaints on Trustora",
+    "none": "No complaints have been raised through Trustora.",
+    "open": "Customer allegation: {category}",
+    "openCount": "{count, plural, one {# open} other {# open}}",
+    "upheld": "Upheld after review: {category}",
+    "resolved": "{count, plural, one {# resolved with the customer} other {# resolved with customers}}",
+    "dismissed": "{count, plural, one {# dismissed after review} other {# dismissed after review}}",
+    "explain": "Open complaints are customer allegations and do not affect the score. Only complaints upheld after Trustora's review are verified findings."
+  },
+  "smeReviews": {
+    "title": "Reviews",
+    "empty": "No reviews yet.",
+    "respond": "Respond publicly",
+    "response": "Your response",
+    "submit": "Post response",
+    "order": "Order {number}"
+  },
+  "smeComplaints": {
+    "title": "Complaints",
+    "body": "Respond to complaints promptly: complaints without a response for more than 14 days lower your trust score. Open complaints are not shown publicly as facts.",
+    "empty": "No complaints.",
+    "all": "All",
+    "respondTitle": "Respond to the customer",
+    "response": "Your response",
+    "submit": "Send response",
+    "addEvidence": "Add supporting evidence",
+    "evidenceHint": "e.g. courier receipt, dispatch photo, invoice. Shown to the customer and Trustora."
+  },
+  "adminComplaints": {
+    "title": "Complaints",
+    "empty": "No complaints in this list.",
+    "filterUNDER_REVIEW": "Escalated",
+    "filterSUBMITTED": "Awaiting seller",
+    "filterSME_RESPONDED": "Seller responded",
+    "filterUPHELD": "Upheld",
+    "filterDISMISSED": "Dismissed",
+    "filterRESOLVED": "Resolved",
+    "decisionTitle": "Decision",
+    "decisionHint": "Uphold only when the evidence substantiates the complaint: an upheld complaint becomes a verified finding that lowers the seller's trust. Both parties see your note.",
+    "UPHELD": "Uphold",
+    "DISMISSED": "Dismiss",
+    "RESOLVED": "Mark resolved",
+    "note": "Decision note",
+    "noteRequired": "A note is required.",
+    "store": "Store",
+    "order": "Order"
   }
 }

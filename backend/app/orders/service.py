@@ -19,6 +19,8 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.audit import service as audit
 from app.auth.models import CurrentUser
+from app.complaints import service as complaints_service
+from app.complaints.schemas import OPEN_STATUSES
 from app.core.db import Database
 from app.core.errors import ConflictError, NotFoundError, ValidationAppError, is_unique_violation
 from app.core.storage import PUBLIC_BUCKET, StorageClient
@@ -39,6 +41,7 @@ from app.orders.schemas import (
     SmeStatusUpdate,
     StoreRef,
 )
+from app.reviews import service as reviews_service
 from app.smes.service import require_own_sme
 from app.trust import trust_engine
 
@@ -396,7 +399,16 @@ async def _build(conn: AsyncConnection, row: Mapping[str, Any], actions: list[st
 
 async def get_customer_order(conn: AsyncConnection, user: CurrentUser, order_id: str) -> OrderOut:
     row = await _order_row(conn, order_id, where="customer_id = :uid", params={"uid": user.id})
-    return await _build(conn, row, CUSTOMER_ACTIONS.get(row["status"], []))
+    review = await reviews_service.get_order_review(conn, order_id)
+    complaint = await complaints_service.latest_for_order(conn, order_id)
+    actions = list(CUSTOMER_ACTIONS.get(row["status"], []))
+    if reviews_service.can_review(dict(row), review is not None):
+        actions.append("review")
+    open_complaint = complaint is not None and complaint.status in OPEN_STATUSES
+    if not open_complaint and complaints_service.within_window(row["placed_at"]):
+        actions.append("complain")
+    order = await _build(conn, row, actions)
+    return order.model_copy(update={"review": review, "complaint": complaint})
 
 
 async def _sme_actions(conn: AsyncConnection, row: Mapping[str, Any]) -> list[str]:
@@ -415,7 +427,13 @@ async def _sme_actions(conn: AsyncConnection, row: Mapping[str, Any]) -> list[st
 async def get_sme_order(conn: AsyncConnection, user: CurrentUser, order_id: str) -> OrderOut:
     sme = await require_own_sme(conn, user)
     row = await _order_row(conn, order_id, where="sme_id = :sme", params={"sme": sme["id"]})
-    return await _build(conn, row, await _sme_actions(conn, row))
+    order = await _build(conn, row, await _sme_actions(conn, row))
+    return order.model_copy(
+        update={
+            "review": await reviews_service.get_order_review(conn, order_id),
+            "complaint": await complaints_service.latest_for_order(conn, order_id),
+        }
+    )
 
 
 _SUMMARY_SQL = (

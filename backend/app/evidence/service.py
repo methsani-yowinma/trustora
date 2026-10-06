@@ -45,6 +45,7 @@ async def insert_file_evidence(
     description: str | None = None,
     product_id: str | None = None,
     verification_id: str | None = None,
+    complaint_id: str | None = None,
 ) -> str:
     async with Database.privileged(conn):
         return str(
@@ -52,10 +53,11 @@ async def insert_file_evidence(
                 await conn.execute(
                     text(
                         "insert into public.evidence (type, provenance, sme_id, product_id, "
-                        "verification_id, description, source, storage_path, mime_type, "
+                        "verification_id, complaint_id, description, source, storage_path, mime_type, "
                         "size_bytes, sha256, created_by) values (cast(:type as public.evidence_type), "
                         "cast(:provenance as public.evidence_provenance), :sme_id, :product_id, "
-                        ":verification_id, :description, 'UPLOAD', :path, :mime, :size, :sha256, "
+                        ":verification_id, :complaint_id, :description, 'UPLOAD', :path, :mime, "
+                        ":size, :sha256, "
                         ":created_by) returning id"
                     ),
                     {
@@ -64,6 +66,7 @@ async def insert_file_evidence(
                         "sme_id": sme_id,
                         "product_id": product_id,
                         "verification_id": verification_id,
+                        "complaint_id": complaint_id,
                         "description": description,
                         "path": stored.path,
                         "mime": stored.file.kind.mime,
