@@ -30,7 +30,7 @@ every role. Written only by the backend (`app/audit/service.py`).
 
 ### Helper
 
-`public.is_admin()` — security definer; true when the caller is an ACTIVE admin.
+`private.is_admin()` (in `public` until Phase 9) — security definer; true when the caller is an ACTIVE admin.
 
 ## Phase 3 — SMEs, stores, verification, evidence, products (`20261006000000_sme_store_products.sql`)
 
@@ -92,7 +92,20 @@ category and outcome — never complaint text or identities.
 
 AI results are advisory: no trigger, rule or query in the trust engine reads this table.
 
+## Phase 9 — Security hardening (`20261011000000_security_hardening.sql`)
+
+- **`api_only`**: a restrictive policy on every table, for `anon` and `authenticated`. Rows are
+  visible and writable only when the transaction sets `trustora.api = 'on'`, which only the
+  backend does. Supabase's Data API therefore sees nothing
+  ([ADR 0010](../decisions/0010-api-only-database-access.md)).
+- **`private` schema**: RLS helpers (`is_admin`, `has_active_role`, `owns_sme`, `is_public_sme`,
+  `product_sme`, `can_view_order`, `can_view_complaint`, `is_localized_text`) moved out of the
+  exposed `public` schema, so they are not callable as RPC endpoints.
+
 ## Access matrix (enforced by grants + RLS)
+
+Applies to requests made through the Trustora API (see `api_only` above). Direct Data API
+requests get no rows from any table.
 
 | Table | anon | authenticated (self) | authenticated (admin) |
 | ----- | ---- | -------------------- | --------------------- |
