@@ -7,6 +7,7 @@ from typing import Any, Literal
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.ai import store as ai_store
 from app.audit import service as audit
 from app.auth.models import CurrentUser
 from app.core.errors import ConflictError, NotFoundError
@@ -189,7 +190,12 @@ async def admin_list_evidence(
         .mappings()
         .all()
     )
-    return [await _evidence_item(storage, r) for r in rows]
+    items = [await _evidence_item(storage, r) for r in rows]
+    latest = await ai_store.latest(conn, "DOCUMENT", [i.id for i in items])
+    return [
+        i.model_copy(update={"ai_analysis": ai_store.to_out(latest[i.id])}) if i.id in latest else i
+        for i in items
+    ]
 
 
 async def admin_review_evidence(

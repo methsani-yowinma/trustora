@@ -12,7 +12,7 @@ router = APIRouter(tags=["users"])
 @router.get("/me", response_model=ProfileOut)
 async def read_me(
     user: CurrentUser = Depends(get_current_user),
-    conn: AsyncConnection = Depends(get_user_db),
+    conn: AsyncConnection = Depends(get_user_db, scope="function"),
 ) -> ProfileOut:
     return await service.get_profile(conn, user)
 
@@ -21,6 +21,6 @@ async def read_me(
 async def update_me(
     changes: ProfileUpdate,
     user: CurrentUser = Depends(get_current_user),
-    conn: AsyncConnection = Depends(get_user_db),
+    conn: AsyncConnection = Depends(get_user_db, scope="function"),
 ) -> ProfileOut:
     return await service.update_profile(conn, user, changes)

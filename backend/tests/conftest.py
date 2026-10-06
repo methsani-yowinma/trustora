@@ -204,6 +204,9 @@ class FakeStorage:
     def public_url(self, bucket: str, path: str) -> str:
         return f"https://storage.test/public/{bucket}/{path}"
 
+    async def download(self, bucket: str, path: str) -> bytes:
+        return self.objects[(bucket, path)][0]
+
     def paths(self, bucket: str) -> list[str]:
         return [p for b, p in self.objects if b == bucket]
 

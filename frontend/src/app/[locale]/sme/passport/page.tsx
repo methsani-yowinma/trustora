@@ -8,7 +8,8 @@ import { buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import type { SmeTrust, TrustSuggestion } from "@/lib/api/types";
+import { serverFetch } from "@/lib/api/server";
+import type { SmeTrust, TrustExplanation, TrustSuggestion } from "@/lib/api/types";
 import { serverApi } from "@/lib/auth";
 import { requireSme } from "@/lib/sme";
 
@@ -35,6 +36,10 @@ export default async function SmePassportPage({ params }: PageProps<"/[locale]/s
     getTranslations("policies"),
   ]);
   const trust = await serverApi<SmeTrust>("/sme/trust");
+  // The public summary exists only once the store is published.
+  const explanation = guard.sme.is_published
+    ? await serverFetch<TrustExplanation>(`/stores/${guard.sme.slug}/trust/explanation?locale=${locale}`).catch(() => null)
+    : null;
 
   const suggestionText = (s: TrustSuggestion) => {
     const values: Record<string, string | number> = {};
@@ -87,7 +92,7 @@ export default async function SmePassportPage({ params }: PageProps<"/[locale]/s
         )}
       </Card>
 
-      <PassportView passport={trust} />
+      <PassportView passport={trust} explanation={explanation} />
     </div>
   );
 }

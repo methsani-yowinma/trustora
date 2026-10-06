@@ -1,16 +1,17 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Path, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.ai.review_analyzer import analyze_review
 from app.auth.dependencies import get_anon_db, get_user_db, require_role
 from app.auth.models import CurrentUser, UserRole
 from app.reviews import service
 from app.reviews.schemas import ReviewCreate, ReviewOut, ReviewPage, ReviewResponseIn, SmeReviewOut
 
-Db = Annotated[AsyncConnection, Depends(get_user_db)]
-AnonDb = Annotated[AsyncConnection, Depends(get_anon_db)]
+Db = Annotated[AsyncConnection, Depends(get_user_db, scope="function")]
+AnonDb = Annotated[AsyncConnection, Depends(get_anon_db, scope="function")]
 
 router = APIRouter(tags=["reviews"])
 
@@ -23,8 +24,12 @@ async def create_review(
     data: ReviewCreate,
     user: Annotated[CurrentUser, Depends(require_role(UserRole.CUSTOMER))],
     conn: Db,
+    request: Request,
+    background: BackgroundTasks,
 ) -> ReviewOut:
-    return await service.create_review(conn, user, str(order_id), data)
+    review = await service.create_review(conn, user, str(order_id), data)
+    background.add_task(analyze_review, request.app.state.db, request.app.state.ai, review.id)
+    return review
 
 
 @router.get("/stores/{slug}/reviews", response_model=ReviewPage)

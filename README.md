@@ -34,8 +34,9 @@ trustora/
 | 3 | SME registration, verification, store, product management | ✅ Approved |
 | 4 | Trust Engine: evidence review, rules, calculation, Trust Passport, history | ✅ Approved |
 | 5 | Commerce: browsing, cart, checkout, orders, delivery status | ✅ Approved |
-| 6 | Customer Trust: reviews, complaints, evidence workflows, trust explanations | ✅ Implemented |
-| 7–10 | Gemini · Trustora AI · Security · Testing | Pending |
+| 6 | Customer Trust: reviews, complaints, evidence workflows, trust explanations | ✅ Approved |
+| 7 | Gemini: complaint/review analysis, document reading, trust explanations | ✅ Approved |
+| 8–10 | Trustora AI · Security · Testing | Pending |
 
 ## Prerequisites
 
@@ -80,6 +81,10 @@ uvicorn app.main:create_app --factory --reload --port 8000
   `--proxy-headers --forwarded-allow-ips=<frontend/LB address>`. Server-rendered pages forward the
   visitor's IP (`X-Forwarded-For`), so per-client rate limits apply per visitor rather than to the
   frontend server as a whole.
+- `GEMINI_API_KEY` (optional): enables AI analysis and AI-written trust summaries. Without it,
+  everything works and summaries use a rules-based template. Use a **paid-tier** key before
+  processing real customer data. `GEMINI_MODEL` defaults to `gemini-2.5-flash`.
+  See [ADR 0008](docs/decisions/0008-gemini-integration.md).
 
 ## 3. Frontend
 
@@ -93,7 +98,7 @@ npm run dev                       # http://localhost:3000 → redirects to /en
 ## Testing
 
 ```bash
-# Backend: 258 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
+# Backend: 291 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
 cd backend && pytest
 ruff check . && ruff format --check .
 

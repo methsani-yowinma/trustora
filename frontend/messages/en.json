@@ -160,7 +160,10 @@
     "duplicate_submission": "This order was already submitted.",
     "review_not_allowed": "Only delivered orders can be reviewed, once, within 90 days.",
     "complaint_open": "This order already has an open complaint.",
-    "complaint_window_closed": "Complaints can be raised within 90 days of the order."
+    "complaint_window_closed": "Complaints can be raised within 90 days of the order.",
+    "not_analyzable": "This evidence cannot be analysed.",
+    "ai_unavailable": "AI analysis is not available right now.",
+    "integrity_mismatch": "The stored file does not match its recorded hash."
   },
   "verificationStatus": {
     "UNVERIFIED": "Not verified",
@@ -811,5 +814,58 @@
     "noteRequired": "A note is required.",
     "store": "Store",
     "order": "Order"
+  },
+  "ai": {
+    "summaryTitle": "Summary",
+    "aiSummary": "AI summary",
+    "aiNote": "Written by AI from the signals on this page. The score itself is calculated by Trustora's rules, not by AI.",
+    "templateNote": "Generated from the signals on this page.",
+    "analysis": "AI analysis",
+    "analysisNote": "AI analysis — check the document yourself before deciding. AI never makes verification decisions.",
+    "analyze": "Analyze with AI",
+    "analyzing": "Analyzing…",
+    "reanalyze": "Analyze again",
+    "failed": "AI could not analyse this item. Review it manually.",
+    "skipped": "AI analysis is not configured.",
+    "extracted": "Extracted by AI",
+    "checks": "Checked by Trustora against the application",
+    "field": {
+      "document_type": "Document type",
+      "business_name": "Business name",
+      "registration_number": "Registration number",
+      "issue_date": "Issue date",
+      "issuer": "Issuer",
+      "product_names": "Products mentioned",
+      "legibility": "Legibility",
+      "notes": "Notes"
+    },
+    "check": {
+      "registered_name": "Registered name",
+      "registration_number": "Registration number",
+      "product_name": "Product name"
+    },
+    "checkResult": {
+      "MATCH": "Matches",
+      "PARTIAL": "Partly matches",
+      "MISMATCH": "Does not match",
+      "NOT_FOUND": "Not found in document"
+    },
+    "triage": "AI triage",
+    "triageNote": "Classification of the customer's allegation by AI, to help prioritise. It is not a finding.",
+    "suggestedCategory": "Suggested category",
+    "severity": "Severity",
+    "sentiment": "Sentiment",
+    "summary": "Summary",
+    "sentimentValue": {
+      "POSITIVE": "Positive",
+      "NEUTRAL": "Neutral",
+      "NEGATIVE": "Negative"
+    },
+    "severityValue": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
+    },
+    "reviewSentiment": "AI: {sentiment}"
   }
 }

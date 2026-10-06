@@ -13,19 +13,21 @@ import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/client";
 import { serverFetch } from "@/lib/api/server";
-import type { Passport, PublicComplaintSummary as PublicComplaintSummaryData } from "@/lib/api/types";
+import type { Passport, PublicComplaintSummary as PublicComplaintSummaryData, TrustExplanation } from "@/lib/api/types";
 import { formatDate } from "@/lib/localize";
 
 const SLUG = /^[A-Za-z0-9-]{3,40}$/;
 
-const loadPassport = cache(async (slug: string) => {
+const loadPassport = cache(async (slug: string, locale: string) => {
   if (!SLUG.test(slug)) return null;
   try {
     const [passport, complaints] = await Promise.all([
       serverFetch<Passport>(`/stores/${slug}/passport`),
       serverFetch<PublicComplaintSummaryData>(`/stores/${slug}/complaints/summary`),
     ]);
-    return { ...passport, complaints };
+    // The summary is optional: the passport works without it.
+    const explanation = await serverFetch<TrustExplanation>(`/stores/${slug}/trust/explanation?locale=${locale}`).catch(() => null);
+    return { ...passport, complaints, explanation };
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
@@ -36,7 +38,7 @@ export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/stores/[slug]/passport">): Promise<Metadata> {
   const { slug, locale } = await params;
-  const passport = await loadPassport(slug).catch(() => null);
+  const passport = await loadPassport(slug, locale).catch(() => null);
   if (!passport) return {};
   const t = await getTranslations({ locale: locale as Locale, namespace: "passport" });
   return { title: `${t("title")} · ${passport.store.name}` };
@@ -49,7 +51,7 @@ export default async function PassportPage({ params }: PageProps<"/[locale]/stor
 
   let passport: Awaited<ReturnType<typeof loadPassport>>;
   try {
-    passport = await loadPassport(slug);
+    passport = await loadPassport(slug, locale);
   } catch {
     const tCommon = await getTranslations("common");
     return (
@@ -85,7 +87,7 @@ export default async function PassportPage({ params }: PageProps<"/[locale]/stor
           }
         />
       </div>
-      <PassportView passport={passport} complaints={passport.complaints} />
+      <PassportView passport={passport} complaints={passport.complaints} explanation={passport.explanation} />
     </div>
   );
 }
