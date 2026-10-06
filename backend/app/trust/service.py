@@ -262,6 +262,9 @@ async def admin_recalculate(
     if exists is None:
         raise NotFoundError("SME not found")
     await trust_engine.recalculate(conn, sme_id, trigger="admin.recalculate", actor=admin)
+    # Recorded even when the score is unchanged (score changes are audited by the engine).
+    await audit.record(conn, actor=admin, action="trust.recalculated", target_type="sme",
+                       target_id=sme_id)  # fmt: skip
     row = (
         (
             await conn.execute(

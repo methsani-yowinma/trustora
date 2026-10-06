@@ -28,6 +28,9 @@ def create_engine(database_url: str) -> AsyncEngine:
         max_overflow=5,
         # Compatible with Supabase's pooler (no server-side prepared statement reuse).
         connect_args={"statement_cache_size": 0},
+        # Error messages (and therefore logs) never include bound values: addresses, phone
+        # numbers, JWT claims and other personal data stay out of logs.
+        hide_parameters=True,
     )
 
 
@@ -41,10 +44,13 @@ class Database:
             {"sub": claims.user_id, "role": "authenticated", "email": claims.email}
         )
         async with self.engine.begin() as conn:
-            # Both settings are transaction-local (is_local = true) and reset on commit/rollback.
+            # All settings are transaction-local (is_local = true) and reset on commit/rollback.
+            # `trustora.api` marks the request as coming through this API (see the
+            # security-hardening migration): direct Data API requests never carry it.
             await conn.execute(
                 text(
                     "select set_config('request.jwt.claims', :claims, true), "
+                    "set_config('trustora.api', 'on', true), "
                     "set_config('role', 'authenticated', true)"
                 ),
                 {"claims": jwt_claims},
@@ -58,6 +64,7 @@ class Database:
             await conn.execute(
                 text(
                     "select set_config('request.jwt.claims', '', true), "
+                    "set_config('trustora.api', 'on', true), "
                     "set_config('role', 'anon', true)"
                 )
             )

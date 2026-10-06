@@ -173,7 +173,8 @@ async def test_contact_change_clears_contact_verification_even_via_direct_update
     async with engine.begin() as conn:
         await conn.execute(
             text(
-                "select set_config('request.jwt.claims', :c, true), set_config('role', 'authenticated', true)"
+                "select set_config('request.jwt.claims', :c, true), set_config('trustora.api', 'on', true), "
+                "set_config('role', 'authenticated', true)"
             ),
             {"c": f'{{"sub": "{owner.id}", "role": "authenticated"}}'},
         )

@@ -5,3 +5,5 @@ httpx>=0.27,<1
 ruff>=0.6,<1
 # Embedded PostgreSQL for integration/RLS tests (no Docker needed)
 pgserver>=0.1.4,<0.2
+# Dependency vulnerability audit: pip-audit -r requirements.txt
+pip-audit>=2.7,<3

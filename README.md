@@ -37,7 +37,8 @@ trustora/
 | 6 | Customer Trust: reviews, complaints, evidence workflows, trust explanations | ✅ Approved |
 | 7 | Gemini: complaint/review analysis, document reading, trust explanations | ✅ Approved |
 | 8 | Trustora AI: grounded, role-aware chatbot with function calling (en/si) | ✅ Approved |
-| 9–10 | Security · Testing | Pending |
+| 9 | Security hardening: review, fixes, regression tests ([report](docs/security/README.md)) | ✅ Approved |
+| 10 | Testing | Pending |
 
 ## Prerequisites
 
@@ -101,7 +102,7 @@ npm run dev                       # http://localhost:3000 → redirects to /en
 ## Testing
 
 ```bash
-# Backend: 323 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
+# Backend: 357 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
 cd backend && pytest
 ruff check . && ruff format --check .
 
@@ -120,5 +121,9 @@ A Postman collection is in [postman/](postman/).
   `NEXT_PUBLIC_*` values (Supabase URL, anon key, API URL).
 - Every API request is authorized in the service layer **and** runs inside a Postgres
   transaction as role `authenticated` with the caller's JWT claims, so RLS also applies.
-- Anything granted to `authenticated` is reachable from the browser via Supabase's REST API;
-  migrations therefore revoke default grants and add only safe, RLS-protected privileges.
+- Domain tables are reachable only through the Trustora API: a restrictive RLS policy requires a
+  transaction setting that only the backend sets, so Supabase's REST/GraphQL API returns nothing
+  ([ADR 0010](docs/decisions/0010-api-only-database-access.md)).
+- Production settings (Supabase Auth, Data API, keys, TLS, proxy headers, monitoring) and the
+  Phase 9 findings are in the [security review](docs/security/README.md).
+- Dependency audit: `npm audit --omit=dev` (frontend) and `pip-audit -r requirements.txt` (backend).

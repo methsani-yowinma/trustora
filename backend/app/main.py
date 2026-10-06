@@ -18,7 +18,7 @@ from app.core.config import Settings, get_settings
 from app.core.db import Database, create_engine
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
-from app.core.middleware import RequestContextMiddleware
+from app.core.middleware import BodySizeLimitMiddleware, RequestContextMiddleware
 from app.core.rate_limit import DEFAULT_LIMIT, rate_limit
 from app.core.security import TokenVerifier
 from app.core.storage import StorageClient, SupabaseStorage, UnconfiguredStorage
@@ -85,7 +85,8 @@ def create_app(
     register_error_handlers(app)
 
     # Order: last added runs first. CORS must wrap everything so error responses carry headers.
-    app.add_middleware(RequestContextMiddleware)
+    app.add_middleware(BodySizeLimitMiddleware)
+    app.add_middleware(RequestContextMiddleware, hsts=settings.is_production)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,

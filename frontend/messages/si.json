@@ -163,7 +163,9 @@
     "complaint_window_closed": "ඇණවුමෙන් දින 90ක් ඇතුළත පැමිණිලි ඉදිරිපත් කළ හැක.",
     "not_analyzable": "මෙම සාක්ෂි විශ්ලේෂණය කළ නොහැක.",
     "ai_unavailable": "AI විශ්ලේෂණය දැනට ලබා ගත නොහැක.",
-    "integrity_mismatch": "ගබඩා කළ ගොනුව එහි වාර්තාගත hash අගයට නොගැළපේ."
+    "integrity_mismatch": "ගබඩා කළ ගොනුව එහි වාර්තාගත hash අගයට නොගැළපේ.",
+    "payload_too_large": "ඉල්ලීම ඉතා විශාලයි.",
+    "invalid_image": "මෙම රූප ගොනුව කියවිය නොහැක. කරුණාකර වෙනත් ඡායාරූපයක් උත්සාහ කරන්න."
   },
   "verificationStatus": {
     "UNVERIFIED": "තහවුරු කර නැත",

@@ -163,7 +163,9 @@
     "complaint_window_closed": "Complaints can be raised within 90 days of the order.",
     "not_analyzable": "This evidence cannot be analysed.",
     "ai_unavailable": "AI analysis is not available right now.",
-    "integrity_mismatch": "The stored file does not match its recorded hash."
+    "integrity_mismatch": "The stored file does not match its recorded hash.",
+    "payload_too_large": "The request is too large.",
+    "invalid_image": "This image file could not be read. Please try another photo."
   },
   "verificationStatus": {
     "UNVERIFIED": "Not verified",
