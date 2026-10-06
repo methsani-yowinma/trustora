@@ -37,6 +37,8 @@ class StorageClient(Protocol):
 
     def public_url(self, bucket: str, path: str) -> str: ...
 
+    async def download(self, bucket: str, path: str) -> bytes: ...
+
 
 class SupabaseStorage:
     def __init__(self, base_url: str, service_key: str, http: httpx.AsyncClient) -> None:
@@ -85,6 +87,14 @@ class SupabaseStorage:
     def public_url(self, bucket: str, path: str) -> str:
         return f"{self._base}/object/public/{bucket}/{self._object(path)}"
 
+    async def download(self, bucket: str, path: str) -> bytes:
+        response = await self._http.get(
+            f"{self._base}/object/authenticated/{bucket}/{self._object(path)}",
+            headers=self._headers,
+        )
+        self._raise_for_status(response, "download")
+        return response.content
+
     @staticmethod
     def _raise_for_status(response: httpx.Response, operation: str) -> None:
         if response.is_success:
@@ -107,6 +117,9 @@ class UnconfiguredStorage(SupabaseStorage):
         raise StorageError("File storage is not configured", code="storage_not_configured")
 
     async def signed_url(self, bucket: str, path: str, expires_in: int = SIGNED_URL_SECONDS) -> str:
+        raise StorageError("File storage is not configured", code="storage_not_configured")
+
+    async def download(self, bucket: str, path: str) -> bytes:
         raise StorageError("File storage is not configured", code="storage_not_configured")
 
 

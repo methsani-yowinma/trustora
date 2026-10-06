@@ -38,6 +38,9 @@ class PublicOnlyStorage:
     async def signed_url(self, *args: object, **kwargs: object) -> str:
         raise RuntimeError("signed URLs are not available in the e2e server")
 
+    async def download(self, *args: object, **kwargs: object) -> bytes:
+        raise RuntimeError("downloads are not available in the e2e server")
+
     def public_url(self, bucket: str, path: str) -> str:
         return f"http://localhost/storage/{bucket}/{path}"
 

@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.ai.output import AiAnalysisOut
+
 
 class EvidenceFileOut(BaseModel):
     id: str
@@ -14,3 +16,5 @@ class EvidenceFileOut(BaseModel):
     review_status: str
     created_at: datetime
     download_url: str | None = None
+    # Admin views only.
+    ai_analysis: AiAnalysisOut | None = None

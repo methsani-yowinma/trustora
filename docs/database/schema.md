@@ -84,6 +84,14 @@ through the backend state machine.
 The public complaint record (`GET /stores/{slug}/complaints/summary`) exposes only counts by
 category and outcome — never complaint text or identities.
 
+## Phase 7 — AI analyses (`20261010000000_ai_analyses.sql`)
+
+| Table | Purpose / key rules |
+| ----- | ------------------- |
+| `ai_analyses` | Every Gemini result: `kind` (`COMPLAINT`, `REVIEW`, `DOCUMENT`, `TRUST_EXPLANATION`), `target_id`, `sme_id`, `locale`, `input_hash`, `model`, `prompt_version`, `status` (`DONE` / `FAILED` / `SKIPPED`), `output` (present only when `DONE`), `error_code`. Written by the backend only. Explanations are cached by a partial unique index on (`target_id`, `locale`, `input_hash`). |
+
+AI results are advisory: no trigger, rule or query in the trust engine reads this table.
+
 ## Access matrix (enforced by grants + RLS)
 
 | Table | anon | authenticated (self) | authenticated (admin) |
@@ -100,6 +108,7 @@ category and outcome — never complaint text or identities.
 | trust_scores / trust_signals / trust_score_history | public stores | public stores + own | all (read only) |
 | reviews | public-store reviews without reviewer id | own (customer) / own store (SME) | all |
 | complaints | — | own (customer) / own store (SME) — read only | all (read only) |
+| ai_analyses | — | — | select |
 | orders / order_items / payments / deliveries | — | own orders (customer) or orders placed with own store (SME) — read only | all (read only) |
 
 No client role can insert profiles, evidence, verifications, social accounts or images, or write audit logs.

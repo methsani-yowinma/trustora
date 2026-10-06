@@ -81,7 +81,7 @@ export default async function AdminVerificationDetailPage({
               <h2 className="font-semibold">{t("documents")}</h2>
               <p className="text-xs text-ink-muted">{t("linkExpires")}</p>
             </div>
-            <EvidenceList items={detail.documents} emptyText="—" />
+            <EvidenceList items={detail.documents} emptyText="—" adminAi />
           </Card>
 
           {detail.history.length > 0 ? (

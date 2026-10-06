@@ -13,6 +13,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.ai import store as ai_store
 from app.audit import service as audit
 from app.auth.models import CurrentUser
 from app.complaints.schemas import (
@@ -344,7 +345,11 @@ async def sme_add_evidence(
 async def get_for_admin(
     conn: AsyncConnection, storage: StorageClient, complaint_id: str
 ) -> ComplaintOut:
-    return await _build(conn, storage, await _row(conn, complaint_id, "true", {}), "ADMIN")
+    complaint = await _build(conn, storage, await _row(conn, complaint_id, "true", {}), "ADMIN")
+    analysis = (await ai_store.latest(conn, "COMPLAINT", [complaint_id])).get(complaint_id)
+    return complaint.model_copy(
+        update={"ai_analysis": ai_store.to_out(analysis) if analysis else None}
+    )
 
 
 async def list_for_admin(conn: AsyncConnection, status: str | None) -> list[ComplaintSummaryItem]:

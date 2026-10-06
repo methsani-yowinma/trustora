@@ -37,7 +37,7 @@ UPLOAD_LIMIT = Depends(rate_limit("30/minute", scope="uploads"))
 sme_user = require_role(UserRole.SME)
 admin_user = require_role(UserRole.ADMIN)
 
-Db = Annotated[AsyncConnection, Depends(get_user_db)]
+Db = Annotated[AsyncConnection, Depends(get_user_db, scope="function")]
 Storage = Annotated[StorageClient, Depends(get_storage)]
 SmeUser = Annotated[CurrentUser, Depends(sme_user)]
 AdminUser = Annotated[CurrentUser, Depends(admin_user)]
@@ -132,7 +132,7 @@ public_router = APIRouter(prefix="/stores", tags=["stores"])
 @public_router.get("/{slug}", response_model=PublicStoreOut)
 async def read_public_store(
     slug: Annotated[str, Path(pattern=r"^[A-Za-z0-9-]{3,40}$")],
-    conn: Annotated[AsyncConnection, Depends(get_anon_db)],
+    conn: Annotated[AsyncConnection, Depends(get_anon_db, scope="function")],
     storage: Storage,
 ) -> PublicStoreOut:
     return await service.get_public_store(conn, storage, slug)

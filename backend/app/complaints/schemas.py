@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
+from app.ai.output import AiAnalysisOut
 from app.evidence.schemas import EvidenceFileOut
 
 
@@ -64,6 +65,8 @@ class ComplaintOut(BaseModel):
     evidence: list[EvidenceFileOut]
     # Actions the caller may take now: customer resolve/escalate, SME respond/add_evidence.
     allowed_actions: list[str]
+    # Admin view only: AI triage (analysis, not a finding).
+    ai_analysis: AiAnalysisOut | None = None
 
 
 class ComplaintSummaryItem(BaseModel):

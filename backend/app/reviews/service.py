@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.ai import store as ai_store
 from app.audit import service as audit
 from app.auth.models import CurrentUser
 from app.core.db import Database
@@ -167,7 +168,16 @@ async def sme_reviews(
         _SME_SQL + ("and r.id = :id " if review_id else "") + "order by r.created_at desc limit 200"
     )
     rows = (await conn.execute(text(sql), {"sme": sme["id"], "id": review_id})).mappings().all()
-    return [SmeReviewOut(**{**r, "id": str(r["id"])}) for r in rows]
+    analyses = await ai_store.latest(conn, "REVIEW", [str(r["id"]) for r in rows])
+    sentiment = {
+        k: (v["output"] or {}).get("sentiment")
+        for k, v in analyses.items()
+        if v["status"] == "DONE"
+    }
+    return [
+        SmeReviewOut(**{**r, "id": str(r["id"])}, ai_sentiment=sentiment.get(str(r["id"])))
+        for r in rows
+    ]
 
 
 async def respond(

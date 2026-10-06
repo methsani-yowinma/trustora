@@ -17,8 +17,8 @@ from app.trust.schemas import (
     TrustScoreOut,
 )
 
-Db = Annotated[AsyncConnection, Depends(get_user_db)]
-AnonDb = Annotated[AsyncConnection, Depends(get_anon_db)]
+Db = Annotated[AsyncConnection, Depends(get_user_db, scope="function")]
+AnonDb = Annotated[AsyncConnection, Depends(get_anon_db, scope="function")]
 Storage = Annotated[StorageClient, Depends(get_storage)]
 Slug = Annotated[str, Path(pattern=r"^[A-Za-z0-9-]{3,40}$")]
 

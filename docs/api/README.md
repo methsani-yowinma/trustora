@@ -115,3 +115,15 @@ Open complaints carry 0 trust points (allegations). Upheld complaints are verifi
 upheld product-authenticity complaints mark the order's products as CONCERN.
 
 Uploads are limited to 30/minute per client in addition to the default limit.
+
+### AI (Phase 7)
+
+| Method | Path | Auth | Description |
+| ------ | ---- | ---- | ----------- |
+| GET | `/stores/{slug}/trust/explanation?locale=en\|si` | public | `{text, source: AI\|TEMPLATE, locale, model, rules_version, generated_at}`. Plain-language summary of the passport facts; template when AI is off or its output fails the guard. 30/minute. |
+| POST | `/admin/evidence/{id}/analyze` | ADMIN | Reads a business/product document or product image with Gemini → `AiAnalysis` with `output.extraction` and deterministic `output.checks`. 409 `not_analyzable` / `integrity_mismatch`, 503 `ai_unavailable`. 20/minute. |
+
+Complaint and review analyses run automatically in the background after submission.
+Admins see them as `ai_analysis` on `/admin/complaints/{id}` and on evidence items. SMEs see
+only `ai_sentiment` on `/sme/reviews`. AI output always has `provenance: AI_ANALYSIS` and never
+changes scores or decisions.

@@ -88,6 +88,7 @@ async def get_verification(
         params={"vid": verification_id},
         with_download_urls=True,
     )
+    documents = await evidence.with_ai_analyses(conn, documents)
     history = (
         (
             await conn.execute(

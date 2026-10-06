@@ -63,6 +63,7 @@ export type EvidenceFile = {
   review_status: EvidenceReviewStatus;
   created_at: string;
   download_url: string | null;
+  ai_analysis?: AiAnalysis | null;
 };
 
 export type Verification = VerificationSummary & { documents: EvidenceFile[] };
@@ -359,7 +360,7 @@ export type Review = {
   sme_responded_at: string | null;
   created_at: string;
 };
-export type SmeReview = Review & { order_number: string };
+export type SmeReview = Review & { order_number: string; ai_sentiment: string | null };
 export type ReviewPage = { average: number | null; count: number; distribution: Record<string, number>; items: Review[] };
 
 export type ComplaintCategory =
@@ -401,6 +402,7 @@ export type Complaint = {
   created_at: string;
   evidence: EvidenceFile[];
   allowed_actions: string[];
+  ai_analysis?: AiAnalysis | null;
 };
 
 export type PublicComplaintSummary = {
@@ -409,4 +411,26 @@ export type PublicComplaintSummary = {
   resolved: number;
   dismissed: number;
   total: number;
+};
+
+// --- AI (backend/app/ai) ---------------------------------------------------------------------
+export type AiAnalysis = {
+  id: string;
+  kind: "COMPLAINT" | "REVIEW" | "DOCUMENT" | "TRUST_EXPLANATION";
+  status: "DONE" | "FAILED" | "SKIPPED";
+  model: string;
+  output: Record<string, unknown> | null;
+  checks: Record<string, "MATCH" | "PARTIAL" | "MISMATCH" | "NOT_FOUND"> | null;
+  error_code: string | null;
+  created_at: string;
+  provenance: "AI_ANALYSIS";
+};
+
+export type TrustExplanation = {
+  text: string;
+  source: "AI" | "TEMPLATE";
+  locale: "en" | "si";
+  model: string | null;
+  rules_version: string;
+  generated_at: string;
 };
