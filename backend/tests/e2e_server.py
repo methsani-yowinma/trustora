@@ -8,6 +8,7 @@ Supabase project. Usage: python -m tests.e2e_server --port 8100
 import argparse
 import asyncio
 import json
+import re
 import tempfile
 from pathlib import Path
 
@@ -16,6 +17,7 @@ import uvicorn
 from sqlalchemy import text
 
 import app.main as main_module
+from app.ai.gemini_client import DisabledAiClient, ModelTurn, ToolCall, ToolResults
 from app.core.config import Settings
 from app.core.db import Database, create_engine
 from app.main import create_app
@@ -26,6 +28,35 @@ MIGRATIONS = sorted((ROOT / "supabase" / "migrations").glob("*.sql"))
 
 SME_USER = "00000000-0000-4000-8000-000000000001"
 DRAFT_USER = "00000000-0000-4000-8000-000000000002"
+
+
+class ScriptedChatAi(DisabledAiClient):
+    """Deterministic stand-in for Gemini in browser tests, for the chat only.
+
+    It asks for the real `get_seller_trust` tool when the user is on a store page and answers from
+    the tool result, so the UI is tested against real, authorized data. Other AI features stay
+    unavailable (they inherit the disabled behaviour), as without a key.
+    """
+
+    model = "e2e-scripted"
+    enabled = True
+
+    async def chat(
+        self, *, system: str, history: list, tools: list, max_tokens: int = 800
+    ) -> ModelTurn:  # type: ignore[override]
+        last = history[-1]
+        if isinstance(last, ToolResults):
+            result = last.results[0][1]
+            if "trust_level" in result:
+                return ModelTurn(text=(
+                    f"{result['store_name']} has the trust level {result['trust_level']} "
+                    f"({result['overall_score']}/100), calculated by Trustora's rules."
+                ))  # fmt: skip
+        elif slug := re.search(r'store_slug "([^"]+)"', system):
+            return ModelTurn(
+                text=None, calls=[ToolCall("get_seller_trust", {"store_slug": slug[1]})]
+            )
+        return ModelTurn(text="There isn't enough verified evidence to determine this.")
 
 
 class PublicOnlyStorage:
@@ -189,7 +220,7 @@ def main() -> None:
     # Every e2e request comes from 127.0.0.1 (one client), so the per-client limit is raised here;
     # the real limit is covered by backend tests.
     main_module.DEFAULT_LIMIT = "100000/minute"
-    app = create_app(settings, db=database, storage=PublicOnlyStorage())
+    app = create_app(settings, db=database, storage=PublicOnlyStorage(), ai=ScriptedChatAi())
     # As in production: trust X-Forwarded-For only from the frontend server's address.
     uvicorn.run(
         app,

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.ai.gemini_client import AiClient, create_ai_client
 from app.ai.router import admin_router as ai_admin_router
+from app.ai.router import chat_router as ai_chat_router
 from app.ai.router import public_router as ai_public_router
 from app.complaints.router import admin_router as complaints_admin_router
 from app.complaints.router import public_router as complaints_public_router
@@ -128,6 +129,7 @@ def create_app(
     api.include_router(complaints_admin_router)
     api.include_router(ai_public_router)
     api.include_router(ai_admin_router)
+    api.include_router(ai_chat_router)
     app.include_router(health_router)
     app.include_router(api)
     return app

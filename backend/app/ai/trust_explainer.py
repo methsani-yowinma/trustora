@@ -74,7 +74,7 @@ BANNED = re.compile(
 )
 
 
-def _facts(passport: PassportOut) -> dict[str, Any]:
+def passport_facts(passport: PassportOut) -> dict[str, Any]:
     signals = passport.positive_signals + passport.risk_signals + passport.info_signals
     return {
         "store_name": passport.store.name,
@@ -130,7 +130,7 @@ async def explain(
 ) -> TrustExplanationOut:
     """Runs in the public (anon) transaction; the passport read applies public RLS."""
     passport = await trust_service.public_passport(conn, storage, slug)
-    facts = _facts(passport)
+    facts = passport_facts(passport)
     input_hash = hashlib.sha256(
         json.dumps(
             {"facts": facts, "locale": locale, "v": prompts.EXPLANATION_VERSION},

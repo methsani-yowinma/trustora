@@ -26,6 +26,26 @@
 
   --radius-card: 1rem;
   --shadow-card: 0 1px 2px rgb(11 31 51 / 0.04), 0 4px 16px rgb(11 31 51 / 0.06);
+
+  /* Trustora AI launcher: a brief, occasional sparkle (disabled with reduced motion, below). */
+  --animate-ai-twinkle: ai-twinkle 4s ease-in-out infinite;
+
+  @keyframes ai-twinkle {
+    0%,
+    76%,
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+    84% {
+      opacity: 0.5;
+      transform: scale(0.6) rotate(45deg);
+    }
+    92% {
+      opacity: 1;
+      transform: scale(1.15) rotate(90deg);
+    }
+  }
 }
 
 body {
@@ -41,6 +61,11 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-brand-600);
   outline-offset: 2px;
+}
+
+/* The chat input shows focus on its wrapper (focus-within ring) instead. */
+[data-chat-input]:focus-visible {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

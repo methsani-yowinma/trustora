@@ -93,6 +93,18 @@ passport view              ──► facts ──► cache? ──► Gemini tex
 All calls go through `app/ai/gemini_client.py`. The key stays on the server, and results are
 advisory and labelled `AI_ANALYSIS`. See [ADR 0008](../decisions/0008-gemini-integration.md).
 
+## Trustora AI (Phase 8)
+
+```text
+browser ──POST /chat {recent turns, locale, page context}──► chatbot.py
+   redact user text → Gemini (tools for this role only) ⇄ chat_tools.py (≤5 rounds)
+        public tools: anon transaction · personal tools: caller's RLS transaction
+   → guard reply (no absolute claims / credentials) → {reply, sources, draft?}
+draft → customer confirms in the UI → POST /orders/{id}/complaints (normal endpoint)
+```
+
+See [ADR 0009](../decisions/0009-trustora-ai-chatbot.md).
+
 ## Approved MVP decisions
 
 1. Frontend reads and writes domain data only through FastAPI; RLS still enforced per request.

@@ -91,3 +91,20 @@ def require_role(
         return user
 
     return _check
+
+
+async def get_optional_identity(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    db: Database = Depends(get_database),
+) -> tuple[CurrentUser, AuthClaims] | None:
+    """For endpoints that also serve visitors. A token, if sent, must be valid and active.
+
+    Uses its own short transaction, so long-running handlers (e.g. AI chat) hold no connection.
+    """
+    if credentials is None or not credentials.credentials:
+        return None
+    claims = await get_auth_claims(request, credentials)
+    async with db.user_transaction(claims) as conn:
+        user = await get_current_user(claims, conn)
+    return user, claims
