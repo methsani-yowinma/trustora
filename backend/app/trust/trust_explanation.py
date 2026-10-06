@@ -15,6 +15,8 @@ def improvement_suggestions(signals: Iterable[TrustSignalOut]) -> list[Suggestio
     by_code = {s.code: s for s in signals}
     suggestions: list[Suggestion] = []
 
+    if {"UNRESOLVED_COMPLAINTS", "OPEN_COMPLAINTS"} & by_code.keys():
+        suggestions.append(Suggestion(code="RESPOND_TO_COMPLAINTS"))
     if "MISLEADING_EVIDENCE" in by_code:
         suggestions.append(Suggestion(code="RESOLVE_MISLEADING_EVIDENCE"))
     if {"BUSINESS_NOT_VERIFIED", "VERIFICATION_NOT_APPROVED"} & by_code.keys():

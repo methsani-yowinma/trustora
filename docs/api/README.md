@@ -17,7 +17,7 @@ Base path: `/api/v1`. Interactive docs at `/docs` (disabled when `APP_ENV=produc
 | 401 | `unauthorized`, `token_expired` |
 | 403 | `forbidden`, `profile_missing`, `account_suspended` |
 | 404 | `not_found`, `sme_not_registered` |
-| 409 | `price_changed`, `cart_changed`, `invalid_transition`, `duplicate_submission`, `conflict`, `sme_exists`, `slug_taken`, `social_exists`, `verification_pending`, `already_verified`, `already_decided`, `limit_reached` |
+| 409 | `review_not_allowed`, `complaint_open`, `complaint_window_closed`, `price_changed`, `cart_changed`, `invalid_transition`, `duplicate_submission`, `conflict`, `sme_exists`, `slug_taken`, `social_exists`, `verification_pending`, `already_verified`, `already_decided`, `limit_reached` |
 | 413 | `file_too_large` |
 | 415 | `unsupported_file_type` |
 | 422 | `multiple_stores`, `cart_unavailable`, `validation_error`, `extension_mismatch`, `empty_file`, `document_count`, `unknown_category` |
@@ -94,5 +94,24 @@ Base path: `/api/v1`. Interactive docs at `/docs` (disabled when `APP_ENV=produc
 | POST | `/sme/orders/{id}/status` | SME | `{action: confirm\|dispatch\|in_transit\|delivered\|failed\|cancel, reason (cancel/failed)}` |
 
 Delivered orders, failed deliveries, seller cancellations and late deliveries feed transaction trust.
+
+### Reviews and complaints (Phase 6)
+
+| Method | Path | Auth | Description |
+| ------ | ---- | ---- | ----------- |
+| POST | `/orders/{id}/review` | CUSTOMER | `{rating 1–5, comment?}` — delivered orders only, once, within 90 days |
+| GET | `/stores/{slug}/reviews?page=&page_size=` | public | `{average, count, distribution, items}` — verified buyers, no identities |
+| GET / POST | `/sme/reviews`, `/sme/reviews/{id}/response` | SME | List; one public response per review |
+| POST | `/orders/{id}/complaints` | CUSTOMER | Multipart `category`, `description` (10–2000), up to 3 `files` → allegation |
+| GET | `/complaints`, `/complaints/{id}` | CUSTOMER | Own complaints (incl. seller response, evidence, `allowed_actions`) |
+| POST | `/complaints/{id}/resolve`, `/escalate`, `/evidence` | CUSTOMER | Close as resolved · ask Trustora to review · add evidence |
+| GET | `/sme/complaints?status=`, `/sme/complaints/{id}` | SME | Complaints about the SME's orders |
+| POST | `/sme/complaints/{id}/response`, `/evidence` | SME | Respond once · add counter-evidence (seller claim) |
+| GET | `/admin/complaints?status=UNDER_REVIEW`, `/admin/complaints/{id}` | ADMIN | Queue / detail with both parties' evidence |
+| POST | `/admin/complaints/{id}/decision` | ADMIN | `{decision: UPHELD\|DISMISSED\|RESOLVED, note}` |
+| GET | `/stores/{slug}/complaints/summary` | public | Counts only: open allegations and upheld findings by category, resolved, dismissed |
+
+Open complaints carry 0 trust points (allegations). Upheld complaints are verified findings;
+upheld product-authenticity complaints mark the order's products as CONCERN.
 
 Uploads are limited to 30/minute per client in addition to the default limit.

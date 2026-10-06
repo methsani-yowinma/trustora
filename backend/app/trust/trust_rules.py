@@ -117,7 +117,7 @@ def business_rules(inputs: TrustInputs) -> DimensionResult:
 # --- Product trust -------------------------------------------------------------------------
 def product_authenticity(product: ProductEvidence) -> Authenticity:
     """Authenticity comes only from admin-reviewed evidence — never from AI image judgement."""
-    if product.misleading_ids:
+    if product.misleading_ids or product.upheld_authenticity_complaints:
         return "CONCERN"
     if product.accepted_document_ids:
         return "VERIFIED"
@@ -178,121 +178,91 @@ def _rate(part: int, whole: int) -> float:
 
 
 def transaction_rules(stats: TransactionStats) -> DimensionResult:
+    """Transaction trust = neutral + sample-weighted observed performance + complaint findings.
+
+    * Observed performance: success rate over seller-attributable outcomes (completed, failed
+      deliveries, seller cancellations), adjusted for late deliveries and verified ratings, and
+      blended toward neutral by sample size so a handful of orders cannot dominate.
+    * Upheld complaints (verified findings) and complaints left without a seller response for
+      14 days apply in full, independent of order volume.
+    * Open complaints are customer allegations: shown, but worth 0 points until decided.
+    """
     n = stats.completed_orders
-    # Every order outcome the seller is responsible for counts toward the sample.
     outcomes = n + stats.failed_deliveries + stats.seller_cancellations
-    if outcomes == 0:
-        return DimensionResult(
-            score=w.NEUTRAL,
-            signals=(
-                Signal(
-                    "TRANSACTION",
-                    "INFO",
-                    "LIMITED_TRANSACTION_HISTORY",
-                    0,
-                    "PLATFORM_STATISTIC",
-                    {"completed_orders": 0},
-                ),
-            ),
-        )
+    signals: list[Signal] = []
+    observed_points = 0.0
 
-    # Sample-size weight: observed performance counts more as outcomes accumulate.
-    weight = outcomes / (outcomes + w.PRIOR_ORDERS)
-    # Observed performance = success rate (×100), less late-delivery, complaint and rating
-    # adjustments. Expressed relative to neutral: completed orders contribute +50, and each
-    # failed delivery or seller cancellation removes its share of the outcomes.
-    raw: list[tuple[str, str, float, str, dict[str, object]]] = [
-        (
-            "POSITIVE" if n else "INFO",
-            "COMPLETED_ORDERS",
-            100 - w.NEUTRAL,
-            "PLATFORM_STATISTIC",
-            {"count": n},
-        ),
-    ]
-    if stats.failed_deliveries:
-        failed = stats.failed_deliveries / outcomes
-        raw.append(
-            (
-                "RISK",
-                "DELIVERY_FAILURES",
-                -w.FAILED_DELIVERY_RATE_WEIGHT * failed,
-                "PLATFORM_STATISTIC",
-                {"count": stats.failed_deliveries, "rate": round(failed, 3)},
+    if outcomes:
+        weight = outcomes / (outcomes + w.PRIOR_ORDERS)
+        # Relative to neutral: completed orders contribute +50 and each failure or seller
+        # cancellation removes its share of the outcomes.
+        raw: list[tuple[str, str, float, dict[str, object]]] = [
+            ("POSITIVE" if n else "INFO", "COMPLETED_ORDERS", 100 - w.NEUTRAL, {"count": n}),
+        ]
+        if stats.failed_deliveries:
+            rate = stats.failed_deliveries / outcomes
+            raw.append(
+                (
+                    "RISK",
+                    "DELIVERY_FAILURES",
+                    -w.FAILED_DELIVERY_RATE_WEIGHT * rate,
+                    {"count": stats.failed_deliveries, "rate": round(rate, 3)},
+                )
             )
-        )
-    if stats.seller_cancellations:
-        cancelled = stats.seller_cancellations / outcomes
-        raw.append(
-            (
-                "RISK",
-                "SELLER_CANCELLATIONS",
-                -w.SELLER_CANCELLATION_RATE_WEIGHT * cancelled,
-                "PLATFORM_STATISTIC",
-                {"count": stats.seller_cancellations, "rate": round(cancelled, 3)},
+        if stats.seller_cancellations:
+            rate = stats.seller_cancellations / outcomes
+            raw.append(
+                (
+                    "RISK",
+                    "SELLER_CANCELLATIONS",
+                    -w.SELLER_CANCELLATION_RATE_WEIGHT * rate,
+                    {"count": stats.seller_cancellations, "rate": round(rate, 3)},
+                )
             )
-        )
-    late = _rate(stats.late_deliveries, n)
-    if stats.late_deliveries:
-        raw.append(
-            (
-                "RISK",
-                "LATE_DELIVERIES",
-                -w.LATE_DELIVERY_RATE_WEIGHT * late,
-                "PLATFORM_STATISTIC",
-                {"count": stats.late_deliveries, "rate": round(late, 3)},
+        if stats.late_deliveries:
+            rate = _rate(stats.late_deliveries, n)
+            raw.append(
+                (
+                    "RISK",
+                    "LATE_DELIVERIES",
+                    -w.LATE_DELIVERY_RATE_WEIGHT * rate,
+                    {"count": stats.late_deliveries, "rate": round(rate, 3)},
+                )
             )
-        )
-    if stats.upheld_complaints:
-        raw.append(
-            (
-                "RISK",
-                "UPHELD_COMPLAINTS",
-                max(w.UPHELD_COMPLAINT_MAX, w.UPHELD_COMPLAINT_EACH * stats.upheld_complaints),
-                "VERIFIED_FACT",
-                {"count": stats.upheld_complaints},
+        if (
+            stats.verified_review_count >= w.MIN_REVIEWS_FOR_RATING
+            and stats.verified_review_average is not None
+        ):
+            delta = (stats.verified_review_average - 3) * w.RATING_POINTS_PER_STAR
+            raw.append(
+                (
+                    "POSITIVE" if delta >= 0 else "RISK",
+                    "VERIFIED_REVIEW_RATING",
+                    delta,
+                    {
+                        "average": round(stats.verified_review_average, 1),
+                        "count": stats.verified_review_count,
+                    },
+                )
             )
-        )
-    if stats.overdue_unresolved_complaints:
-        raw.append(
-            (
-                "RISK",
-                "UNRESOLVED_COMPLAINTS",
-                max(
-                    w.OVERDUE_COMPLAINT_MAX,
-                    w.OVERDUE_COMPLAINT_EACH * stats.overdue_unresolved_complaints,
-                ),
-                "PLATFORM_STATISTIC",
-                {"count": stats.overdue_unresolved_complaints},
-            )
-        )
-    if (
-        stats.verified_review_count >= w.MIN_REVIEWS_FOR_RATING
-        and stats.verified_review_average is not None
-    ):
-        delta = (stats.verified_review_average - 3) * w.RATING_POINTS_PER_STAR
-        raw.append(
-            (
-                "POSITIVE" if delta >= 0 else "RISK",
-                "VERIFIED_REVIEW_RATING",
-                delta,
-                "PLATFORM_STATISTIC",
-                {
-                    "average": round(stats.verified_review_average, 1),
-                    "count": stats.verified_review_count,
-                },
-            )
-        )
 
-    # Observed score is bounded to 0..100 before blending, so penalties cannot exceed it.
-    observed_delta = sum(points for _, _, points, _, _ in raw)
-    bounded = clamp(w.NEUTRAL + observed_delta) - w.NEUTRAL
-    scale = bounded / observed_delta if observed_delta else 0.0
+        # Observed performance is bounded to 0..100 before blending.
+        delta_sum = sum(points for _, _, points, _ in raw)
+        bounded = clamp(w.NEUTRAL + delta_sum) - w.NEUTRAL
+        scale = bounded / delta_sum if delta_sum else 0.0
+        observed_points = bounded * weight
+        signals += [
+            Signal(
+                "TRANSACTION",
+                kind,
+                code,
+                round(points * scale * weight),
+                "PLATFORM_STATISTIC",
+                params,
+            )  # type: ignore[arg-type]
+            for kind, code, points, params in raw
+        ]
 
-    signals = [
-        Signal("TRANSACTION", kind, code, round(points * scale * weight), provenance, params)  # type: ignore[arg-type]
-        for kind, code, points, provenance, params in raw
-    ]
     if n < w.LIMITED_HISTORY_ORDERS:
         signals.append(
             Signal(
@@ -304,5 +274,49 @@ def transaction_rules(stats: TransactionStats) -> DimensionResult:
                 {"completed_orders": n},
             )
         )
-    score = clamp(w.NEUTRAL + bounded * weight)
-    return DimensionResult(score=score, signals=tuple(signals))
+
+    complaint_points = 0
+    if stats.upheld_complaints:
+        points = max(w.UPHELD_COMPLAINT_MAX, w.UPHELD_COMPLAINT_EACH * stats.upheld_complaints)
+        complaint_points += points
+        signals.append(
+            Signal(
+                "TRANSACTION",
+                "RISK",
+                "UPHELD_COMPLAINTS",
+                points,
+                "VERIFIED_FACT",
+                {"count": stats.upheld_complaints},
+            )
+        )
+    if stats.overdue_unresolved_complaints:
+        points = max(
+            w.OVERDUE_COMPLAINT_MAX, w.OVERDUE_COMPLAINT_EACH * stats.overdue_unresolved_complaints
+        )
+        complaint_points += points
+        signals.append(
+            Signal(
+                "TRANSACTION",
+                "RISK",
+                "UNRESOLVED_COMPLAINTS",
+                points,
+                "PLATFORM_STATISTIC",
+                {"count": stats.overdue_unresolved_complaints},
+            )
+        )
+    if stats.open_complaints:
+        # Allegations are shown for transparency but never scored before a decision.
+        signals.append(
+            Signal(
+                "TRANSACTION",
+                "INFO",
+                "OPEN_COMPLAINTS",
+                0,
+                "CUSTOMER_ALLEGATION",
+                {"count": stats.open_complaints},
+            )
+        )
+
+    return DimensionResult(
+        score=clamp(w.NEUTRAL + observed_points + complaint_points), signals=tuple(signals)
+    )

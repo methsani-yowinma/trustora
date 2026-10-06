@@ -5,7 +5,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
+from app.complaints.schemas import ComplaintSummaryItem
 from app.deliveries.provider import District
+from app.reviews.schemas import ReviewOut
 from app.trust.schemas import Level
 
 OrderStatus = Literal[
@@ -166,8 +168,10 @@ class OrderOut(BaseModel):
     cancelled_at: datetime | None
     cancelled_by: Literal["CUSTOMER", "SME", "ADMIN"] | None
     cancellation_reason: str | None
-    # Actions the caller may take now (e.g. ["cancel"], ["confirm_receipt"]).
+    # Actions the caller may take now (e.g. ["cancel"], ["confirm_receipt"], ["review"], ["complain"]).
     allowed_actions: list[str]
+    review: ReviewOut | None = None
+    complaint: ComplaintSummaryItem | None = None
 
 
 class OrderSummary(BaseModel):

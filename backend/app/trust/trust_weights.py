@@ -3,7 +3,7 @@
 Every stored score records the RULES_VERSION that produced it, so history stays interpretable.
 """
 
-RULES_VERSION = "2026.10-2"
+RULES_VERSION = "2026.10-3"
 
 # Overall score = weighted mean of the three dimensions.
 DIMENSION_WEIGHTS = {"BUSINESS": 0.40, "PRODUCT": 0.25, "TRANSACTION": 0.35}

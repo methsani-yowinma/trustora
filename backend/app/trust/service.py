@@ -1,6 +1,7 @@
 """Digital Trust Passport assembly and admin evidence review."""
 
 from collections.abc import Mapping
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
 from sqlalchemy import text
@@ -27,6 +28,7 @@ from app.trust.trust_explanation import improvement_suggestions
 from app.trust.trust_history import load_history
 
 PASSPORT_HISTORY_DAYS = 30
+STALE_AFTER = timedelta(hours=1)
 
 _STORE_COLUMNS = (
     "id, slug, name, logo_path, description_i18n, verification_status, verified_at, created_at"
@@ -67,9 +69,11 @@ async def _assemble(
         .mappings()
         .first()
     )
-    if score is None:
-        # Stores created before the trust engine existed get their first score on demand.
-        await trust_engine.recalculate(conn, sme_id, trigger="initial")
+    if score is None or datetime.now(UTC) - score["computed_at"] > STALE_AFTER:
+        # First score on demand, and a refresh for time-based inputs (tenure, overdue complaints).
+        await trust_engine.recalculate(
+            conn, sme_id, trigger="initial" if score is None else "refresh"
+        )
         return await _assemble(conn, storage, store)
 
     signals = [

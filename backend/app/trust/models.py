@@ -21,6 +21,8 @@ class ProductEvidence:
     accepted_document_ids: tuple[str, ...] = ()
     accepted_image_ids: tuple[str, ...] = ()
     misleading_ids: tuple[str, ...] = ()
+    # Complaints about this product's authenticity that an admin upheld (verified findings).
+    upheld_authenticity_complaints: int = 0
     # Hidden products still get an authenticity status but do not count toward the public score.
     active: bool = True
 
@@ -38,6 +40,8 @@ class TransactionStats:
     overdue_unresolved_complaints: int = 0
     verified_review_count: int = 0
     verified_review_average: float | None = None
+    # Open complaints: customer allegations, shown but not scored.
+    open_complaints: int = 0
 
 
 @dataclass(frozen=True)

@@ -334,6 +334,8 @@ export type Order = {
   cancelled_by: "CUSTOMER" | "SME" | "ADMIN" | null;
   cancellation_reason: string | null;
   allowed_actions: string[];
+  review: Review | null;
+  complaint: ComplaintSummary | null;
 };
 
 export type OrderSummary = {
@@ -346,4 +348,65 @@ export type OrderSummary = {
   item_count: number;
   placed_at: string;
   delivery_status: DeliveryStatus;
+};
+
+// --- Reviews & complaints (backend/app/reviews, backend/app/complaints) ---------------------
+export type Review = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  sme_response: string | null;
+  sme_responded_at: string | null;
+  created_at: string;
+};
+export type SmeReview = Review & { order_number: string };
+export type ReviewPage = { average: number | null; count: number; distribution: Record<string, number>; items: Review[] };
+
+export type ComplaintCategory =
+  | "DELIVERY"
+  | "WRONG_PRODUCT"
+  | "PRODUCT_AUTHENTICITY"
+  | "REFUND"
+  | "PAYMENT"
+  | "CUSTOMER_SERVICE"
+  | "PRODUCT_QUALITY"
+  | "OTHER";
+export type ComplaintStatus = "SUBMITTED" | "SME_RESPONDED" | "UNDER_REVIEW" | "RESOLVED" | "UPHELD" | "DISMISSED";
+
+export type ComplaintSummary = {
+  id: string;
+  order_number: string;
+  store_name: string;
+  category: ComplaintCategory;
+  status: ComplaintStatus;
+  created_at: string;
+  escalated_at: string | null;
+};
+
+export type Complaint = {
+  id: string;
+  order_id: string;
+  order_number: string;
+  store_name: string;
+  store_slug: string;
+  category: ComplaintCategory;
+  description: string;
+  status: ComplaintStatus;
+  sme_response: string | null;
+  sme_responded_at: string | null;
+  escalated_at: string | null;
+  resolution_note: string | null;
+  decided_at: string | null;
+  closed_at: string | null;
+  created_at: string;
+  evidence: EvidenceFile[];
+  allowed_actions: string[];
+};
+
+export type PublicComplaintSummary = {
+  open_allegations: Partial<Record<ComplaintCategory, number>>;
+  upheld: Partial<Record<ComplaintCategory, number>>;
+  resolved: number;
+  dismissed: number;
+  total: number;
 };

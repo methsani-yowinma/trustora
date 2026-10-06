@@ -1,4 +1,4 @@
-# ADR 0007 — Trust methodology (rules version 2026.10-2)
+# ADR 0007 — Trust methodology (rules version 2026.10-3)
 
 **Status:** Accepted (Phase 4). Parameters live in `backend/app/trust/trust_weights.py`.
 
@@ -22,13 +22,13 @@ with a code, a provenance (verified fact, seller claim, platform statistic, …)
 | --------- | ---- | ------------ |
 | Business | 10 | verified business +40 · contact confirmed +15 · confirmed social 1→+10, 2+→+15 · each policy +5 (seller claim) · tenure ≥90d +5, ≥365d +10 · complete profile +5 · misleading evidence −25 each (max −50) · suspended −50 |
 | Product | 50 | mean over **active** products of VERIFIED 100 · PARTIALLY_VERIFIED 75 · UNVERIFIED 50 · CONCERN 0 |
-| Transaction | 50 | observed performance = success rate over seller-attributable outcomes (completed, failed deliveries, seller cancellations) × 100, minus late-delivery and upheld/overdue complaint penalties, ± verified rating; blended toward 50 by `n / (n + 10)` outcomes |
+| Transaction | 50 | observed performance = success rate over seller-attributable outcomes (completed, failed deliveries, seller cancellations) × 100, minus late-delivery penalty, ± verified rating (≥ 3 reviews); blended toward 50 by `n / (n + 10)` outcomes. **Plus, in full:** upheld complaints −10 each (max −40, verified facts) and complaints without a seller response for 14 days −5 each (max −20). Open complaints: 0 points (customer allegations, shown as INFO) |
 
 Overall = 0.40 · Business + 0.25 · Product + 0.35 · Transaction.
 
 **Product authenticity** is derived from admin-reviewed evidence only: an accepted document
 (invoice, certificate) → VERIFIED; only an accepted photo → PARTIALLY_VERIFIED; any evidence
-rejected as *misleading* → CONCERN; otherwise UNVERIFIED.
+rejected as *misleading*, or an upheld product-authenticity complaint → CONCERN; otherwise UNVERIFIED.
 
 ## Levels
 
@@ -47,6 +47,10 @@ Changes from the Phase 1 sketch, made while implementing:
 - 2026.10-2 (Phase 5): the transaction sample counts every seller-attributable outcome, not only
   completed orders, so failed deliveries and seller cancellations are visible (and lower the score)
   even before a seller's first completed order.
+- 2026.10-3 (Phase 6): complaint findings are no longer scaled by order volume (a verified finding
+  weighs the same for a small seller); open complaints are displayed as allegations but never
+  scored; upheld authenticity complaints mark products as CONCERN. Passports older than one hour
+  are recalculated on view so time-based inputs (tenure, 14-day response window) stay current.
 
 ## Consequences
 

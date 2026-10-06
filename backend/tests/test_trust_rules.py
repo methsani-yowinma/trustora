@@ -318,3 +318,27 @@ def test_success_rate_drives_observed_transaction_trust() -> None:
     reliable = transaction_rules(TransactionStats(completed_orders=40))
     half_failed = transaction_rules(TransactionStats(completed_orders=20, failed_deliveries=20))
     assert reliable.score > w.NEUTRAL >= half_failed.score
+
+
+def test_open_complaints_are_shown_but_never_scored() -> None:
+    clean = transaction_rules(TransactionStats(completed_orders=30))
+    alleged = transaction_rules(TransactionStats(completed_orders=30, open_complaints=4))
+    assert alleged.score == clean.score
+    signal = next(s for s in alleged.signals if s.code == "OPEN_COMPLAINTS")
+    assert (signal.kind, signal.points, signal.provenance) == ("INFO", 0, "CUSTOMER_ALLEGATION")
+
+
+def test_upheld_complaints_apply_in_full_regardless_of_volume() -> None:
+    no_orders = transaction_rules(TransactionStats(upheld_complaints=2))
+    assert no_orders.score == w.NEUTRAL + 2 * w.UPHELD_COMPLAINT_EACH
+    upheld = next(s for s in no_orders.signals if s.code == "UPHELD_COMPLAINTS")
+    assert upheld.provenance == "VERIFIED_FACT"
+
+
+def test_upheld_authenticity_complaint_makes_product_a_concern() -> None:
+    assert (
+        product_authenticity(
+            ProductEvidence("p", accepted_document_ids=("d",), upheld_authenticity_complaints=1)
+        )
+        == "CONCERN"
+    )

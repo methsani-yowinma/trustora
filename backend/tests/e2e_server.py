@@ -110,6 +110,38 @@ SEED = [
         "('10000000-0000-4000-8000-000000000003', 5, cast(:name as jsonb), 850, 30)",
         {"name": json.dumps({"en": "Ceylon cinnamon sticks"})},
     ),
+    # Matale Spice: one delivered order with a verified review, one order with an open complaint.
+    (
+        "insert into auth.users (id, email, raw_user_meta_data) values "
+        "('00000000-0000-4000-8000-000000000004', 'buyer@example.test', '{}')",
+        {},
+    ),
+    (
+        "insert into public.orders (id, order_number, customer_id, sme_id, status, subtotal_lkr, "
+        "delivery_fee_lkr, total_lkr, shipping_address, payment_method, idempotency_key, delivered_at) "
+        "values "
+        "('20000000-0000-4000-8000-000000000001', 'TR-SEEDREV1', '00000000-0000-4000-8000-000000000004', "
+        "'10000000-0000-4000-8000-000000000003', 'DELIVERED', 850, 500, 1350, '{}', 'COD', "
+        "gen_random_uuid(), now() - interval '3 days'), "
+        "('20000000-0000-4000-8000-000000000002', 'TR-SEEDCMP1', '00000000-0000-4000-8000-000000000004', "
+        "'10000000-0000-4000-8000-000000000003', 'PLACED', 850, 500, 1350, '{}', 'COD', "
+        "gen_random_uuid(), null)",
+        {},
+    ),
+    (
+        "insert into public.reviews (order_id, sme_id, customer_id, rating, comment, sme_response, "
+        "sme_responded_at) values ('20000000-0000-4000-8000-000000000001', "
+        "'10000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000004', 5, "
+        "'Fresh cinnamon, well packed.', 'Thank you for shopping with us!', now())",
+        {},
+    ),
+    (
+        "insert into public.complaints (order_id, sme_id, customer_id, category, description) values "
+        "('20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000003', "
+        "'00000000-0000-4000-8000-000000000004', 'DELIVERY', "
+        "'Private complaint text: order placed two weeks ago and still not received.')",
+        {},
+    ),
     (
         # Earlier trust history, so the passport can show a 30-day change and a chart.
         # The current score is computed by the real trust engine on first view.

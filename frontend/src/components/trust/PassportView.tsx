@@ -1,7 +1,12 @@
 import { useLocale, useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/Card";
-import type { EvidenceProvenance, Passport } from "@/lib/api/types";
+import { PublicComplaintSummary } from "@/components/complaints/PublicComplaintSummary";
+import type {
+  EvidenceProvenance,
+  Passport,
+  PublicComplaintSummary as PublicComplaintSummaryData,
+} from "@/lib/api/types";
 import { formatDate } from "@/lib/localize";
 
 import { SignalList } from "./SignalList";
@@ -10,7 +15,13 @@ import { TrustHistoryChart } from "./TrustHistoryChart";
 import { TrustScoreCard } from "./TrustScoreCard";
 
 /** The body of a Digital Trust Passport, shared by the public page and the SME's own view. */
-export function PassportView({ passport }: { passport: Passport }) {
+export function PassportView({
+  passport,
+  complaints,
+}: {
+  passport: Passport;
+  complaints?: PublicComplaintSummaryData;
+}) {
   const t = useTranslations("passport");
   const locale = useLocale();
   const { trust, evidence_summary: evidence } = passport;
@@ -71,6 +82,8 @@ export function PassportView({ passport }: { passport: Passport }) {
           ) : null}
         </Card>
       </div>
+
+      {complaints ? <PublicComplaintSummary summary={complaints} /> : null}
 
       <div className="space-y-1 text-xs text-ink-muted">
         <p>{t("lastUpdate", { date: formatDate(trust.computed_at, locale) })}</p>

@@ -13,7 +13,7 @@ import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/client";
 import { serverFetch } from "@/lib/api/server";
-import type { Passport } from "@/lib/api/types";
+import type { Passport, PublicComplaintSummary as PublicComplaintSummaryData } from "@/lib/api/types";
 import { formatDate } from "@/lib/localize";
 
 const SLUG = /^[A-Za-z0-9-]{3,40}$/;
@@ -21,7 +21,11 @@ const SLUG = /^[A-Za-z0-9-]{3,40}$/;
 const loadPassport = cache(async (slug: string) => {
   if (!SLUG.test(slug)) return null;
   try {
-    return await serverFetch<Passport>(`/stores/${slug}/passport`);
+    const [passport, complaints] = await Promise.all([
+      serverFetch<Passport>(`/stores/${slug}/passport`),
+      serverFetch<PublicComplaintSummaryData>(`/stores/${slug}/complaints/summary`),
+    ]);
+    return { ...passport, complaints };
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
@@ -43,7 +47,7 @@ export default async function PassportPage({ params }: PageProps<"/[locale]/stor
   setRequestLocale(locale as Locale);
   const t = await getTranslations("passport");
 
-  let passport: Passport | null;
+  let passport: Awaited<ReturnType<typeof loadPassport>>;
   try {
     passport = await loadPassport(slug);
   } catch {
@@ -81,7 +85,7 @@ export default async function PassportPage({ params }: PageProps<"/[locale]/stor
           }
         />
       </div>
-      <PassportView passport={passport} />
+      <PassportView passport={passport} complaints={passport.complaints} />
     </div>
   );
 }
