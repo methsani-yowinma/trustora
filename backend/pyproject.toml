@@ -19,3 +19,16 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
+# Live Gemini tests (tests/test_live_gemini.py) only run when asked for: pytest -m live
+addopts = "-m 'not live'"
+markers = ["live: calls the real Gemini API (needs GEMINI_API_KEY)"]
+
+[tool.coverage.run]
+source = ["app"]
+# SQLAlchemy's async engine resumes code inside greenlets; without this, lines after a database
+# call are reported as not covered.
+concurrency = ["greenlet", "thread"]
+
+[tool.coverage.report]
+skip_covered = true
+show_missing = true

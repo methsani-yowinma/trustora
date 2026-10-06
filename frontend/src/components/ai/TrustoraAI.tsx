@@ -37,8 +37,13 @@ type SuggestionKey =
 const MAX_TURNS = 12;
 const MAX_CHARS = 1000;
 
+/** The conversation as the API accepts it: the most recent turns, each within the length limit. */
+export function chatTurns(history: Pick<Message, "role" | "text">[]) {
+  return history.slice(-MAX_TURNS).map((m) => ({ role: m.role, text: m.text.slice(0, MAX_CHARS) }));
+}
+
 /** What the user is looking at, so "this seller" / "this product" means something. */
-function pageContext(pathname: string) {
+export function pageContext(pathname: string) {
   const store = pathname.match(/^\/[a-z]{2}\/stores\/([A-Za-z0-9-]{3,40})(?:\/|$)/);
   const product = pathname.match(/^\/[a-z]{2}\/products\/([0-9a-f-]{36})(?:\/|$)/i);
   const section = pathname.split("/")[2] ?? "";
@@ -116,7 +121,7 @@ export function TrustoraAI() {
       const response = await clientApi<ChatResponse>("/chat", {
         method: "POST",
         body: {
-          messages: history.slice(-MAX_TURNS).map((m) => ({ role: m.role, text: m.text.slice(0, MAX_CHARS) })),
+          messages: chatTurns(history),
           locale,
           context,
         },

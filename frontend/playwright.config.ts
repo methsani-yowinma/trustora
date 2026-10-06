@@ -6,11 +6,12 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3100;
 const API_PORT = 8100;
 
-// Signed-out flows only: no test signs in, so a placeholder Supabase project is enough.
+// Sign-in uses a Supabase Auth stand-in, so no Supabase project is needed.
 // The API is the real FastAPI app on an embedded, seeded Postgres (backend/tests/e2e_server.py).
 const testEnv = {
-  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co",
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder",
+  // Supabase Auth stand-in served by the e2e API (backend/tests/fake_supabase_auth.py).
+  NEXT_PUBLIC_SUPABASE_URL: `http://localhost:${API_PORT}`,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: "e2e-anon-key",
   NEXT_PUBLIC_API_URL: `http://localhost:${API_PORT}`,
 };
 

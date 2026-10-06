@@ -1,29 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { safeNextPath } from "../src/lib/redirect";
-
-test.describe("post-login redirects", () => {
-  const allowed: Array<[string, string]> = [
-    ["/en/orders", "/en/orders"],
-    ["/si/sme/passport?tab=history#top", "/si/sme/passport?tab=history#top"],
-  ];
-  const rejected = [
-    "https://evil.example/",
-    "//evil.example",
-    "/\\evil.example",
-    "/\t/evil.example",
-    "/\n/evil.example",
-    "\\\\evil.example",
-    "javascript:alert(1)",
-    "en/orders",
-    "",
-  ];
-
-  test("only same-site paths are accepted", () => {
-    for (const [input, expected] of allowed) expect(safeNextPath(input)).toBe(expected);
-    for (const input of rejected) expect(safeNextPath(input), JSON.stringify(input)).toBeNull();
-  });
-});
+// Redirect validation is unit-tested in src/lib/redirect.test.ts.
 
 test("pages send a Content-Security-Policy and render without violations", async ({ page }) => {
   const violations: string[] = [];
