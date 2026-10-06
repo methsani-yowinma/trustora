@@ -12,7 +12,8 @@ The requirements also call for Row Level Security.
   through FastAPI with the user's access token.
 - FastAPI verifies the JWT, then runs each request in a transaction where
   `request.jwt.claims` is set and `role` is `authenticated` (`Database.user_transaction`).
-  RLS policies (`auth.uid()`, `public.is_admin()`) therefore apply to backend queries too.
+  RLS policies (`auth.uid()`, `private.is_admin()`) therefore apply to backend queries too.
+  Since Phase 9 these roles see data only when the backend marks the transaction (ADR 0010).
 - Backend-only writes (audit logs, trust snapshots) run privileged — either in a
   `system_transaction` or via `Database.privileged(conn)` inside the user transaction,
   so they stay atomic with the action.

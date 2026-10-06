@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Literal
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from pydantic import (
     BaseModel,
@@ -134,15 +134,27 @@ class SocialAccountCreate(BaseModel):
     def _url_matches_platform(self) -> "SocialAccountCreate":
         # Only links to the declared platform: prevents phishing links on public store pages.
         if self.url:
-            parsed = urlparse(self.url)
-            host = (parsed.hostname or "").lower()
             allowed = _PLATFORM_HOSTS[self.platform]
-            if parsed.scheme != "https" or not any(
-                host == h or host.endswith("." + h) for h in allowed
+            invalid = ValueError(f"URL must be an https link to {allowed[0]}")
+            # Browsers read "\" as "/" and drop control characters, so such URLs can point to a
+            # different host than Python's parser sees ("https://evil.example\@facebook.com").
+            if re.search(r"[\\\s\x00-\x1f\x7f]", self.url):
+                raise invalid
+            parsed = urlparse(self.url)
+            try:
+                port = parsed.port
+            except ValueError:
+                raise invalid from None
+            host = (parsed.hostname or "").lower()
+            if (
+                parsed.scheme != "https"
+                or "@" in parsed.netloc
+                or port is not None
+                or not any(host == h or host.endswith("." + h) for h in allowed)
             ):
-                raise ValueError(f"URL must be an https link to {allowed[0]}")
-            if re.search(r"\s", self.url):
-                raise ValueError("URL must not contain spaces")
+                raise invalid
+            # Store a canonical form rebuilt from the checked parts.
+            self.url = urlunparse(("https", host, parsed.path or "/", "", parsed.query, ""))
         return self
 
 

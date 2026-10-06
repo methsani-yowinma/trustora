@@ -6,9 +6,11 @@ JWTs are signed with a locally generated ES256 key served by a fake JWKS resolve
 """
 
 import json
+import struct
 import tempfile
 import time
 import uuid
+import zlib
 from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -238,8 +240,25 @@ def bearer(token: str) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 # Domain helpers
 # ---------------------------------------------------------------------------
-PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
-JPEG_BYTES = b"\xff\xd8\xff\xe0" + b"\x00" * 64
+def _png_chunk(kind: bytes, payload: bytes) -> bytes:
+    crc = struct.pack(">I", zlib.crc32(kind + payload))
+    return struct.pack(">I", len(payload)) + kind + payload + crc
+
+
+# Structurally valid 1x1 images (uploads are parsed to remove metadata).
+PNG_BYTES = (
+    b"\x89PNG\r\n\x1a\n"
+    + _png_chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+    + _png_chunk(b"IDAT", zlib.compress(b"\x00\xff\xff\xff"))
+    + _png_chunk(b"IEND", b"")
+)
+JPEG_BYTES = (
+    b"\xff\xd8"
+    + b"\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00"  # APP0
+    + b"\xff\xda\x00\x08\x01\x01\x00\x00\x3f\x00"  # SOS
+    + b"\x00" * 16
+    + b"\xff\xd9"
+)
 PDF_BYTES = b"%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\ntrailer\n%%EOF\n"
 
 

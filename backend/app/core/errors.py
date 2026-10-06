@@ -90,14 +90,38 @@ _HTTP_CODES = {
 }
 
 
+security_logger = logging.getLogger("trustora.security")
+
+# Denied or throttled requests are security events worth monitoring (OWASP A09).
+_SECURITY_STATUSES = {401, 403, 429}
+
+
+def _log_security_event(request: Request, status_code: int, code: str) -> None:
+    if status_code in _SECURITY_STATUSES:
+        # Never the token or request body; the request id links to the access log line.
+        security_logger.warning(
+            "request denied",
+            extra={
+                "status": status_code,
+                "code": code,
+                "method": request.method,
+                "path": request.url.path,
+                "client": request.client.host if request.client else None,
+                "request_id": getattr(request.state, "request_id", None),
+            },
+        )
+
+
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
-    async def _app_error(_: Request, exc: AppError) -> JSONResponse:
+    async def _app_error(request: Request, exc: AppError) -> JSONResponse:
+        _log_security_event(request, exc.status_code, exc.code)
         return _envelope(exc.status_code, exc.code, exc.message)
 
     @app.exception_handler(StarletteHTTPException)
-    async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+    async def _http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:
         code = _HTTP_CODES.get(exc.status_code, "http_error")
+        _log_security_event(request, exc.status_code, code)
         message = exc.detail if isinstance(exc.detail, str) else code
         return _envelope(exc.status_code, code, message)
 

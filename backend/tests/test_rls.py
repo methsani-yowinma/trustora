@@ -19,14 +19,18 @@ from app.core.security import AuthClaims
 
 @asynccontextmanager
 async def as_role(
-    engine: AsyncEngine, role: str, user_id: str | None = None
+    engine: AsyncEngine, role: str, user_id: str | None = None, *, via_api: bool = True
 ) -> AsyncIterator[AsyncConnection]:
+    """A transaction as `role`, like the backend's (default) or a direct Data API client."""
     async with engine.connect() as conn:
         trans = await conn.begin()
         claims = json.dumps({"sub": user_id, "role": role}) if user_id else ""
         await conn.execute(
-            text("select set_config('request.jwt.claims', :c, true), set_config('role', :r, true)"),
-            {"c": claims, "r": role},
+            text(
+                "select set_config('request.jwt.claims', :c, true), "
+                "set_config('trustora.api', :api, true), set_config('role', :r, true)"
+            ),
+            {"c": claims, "r": role, "api": "on" if via_api else ""},
         )
         try:
             yield conn
