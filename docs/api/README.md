@@ -123,6 +123,12 @@ Uploads are limited to 30/minute per client in addition to the default limit.
 | GET | `/stores/{slug}/trust/explanation?locale=en\|si` | public | `{text, source: AI\|TEMPLATE, locale, model, rules_version, generated_at}`. Plain-language summary of the passport facts; template when AI is off or its output fails the guard. 30/minute. |
 | POST | `/admin/evidence/{id}/analyze` | ADMIN | Reads a business/product document or product image with Gemini → `AiAnalysis` with `output.extraction` and deterministic `output.checks`. 409 `not_analyzable` / `integrity_mismatch`, 503 `ai_unavailable`. 20/minute. |
 
+| POST | `/chat` | public or any role | Trustora AI. `{messages: [{role: user\|assistant, text ≤1000}] (≤12, last = user), locale: en\|si, context?: {store_slug?, product_id?}}` → `{reply, used_tools, sources: [{kind: STORE\|PRODUCT\|ORDER, ref, label}], draft?: {order_id, order_number, category, description}, model, provenance}`. 503 `ai_unavailable`. 20/minute. |
+
+The chat uses only the tools allowed for the caller's role and identity (see
+[ADR 0009](../decisions/0009-trustora-ai-chatbot.md)). A `draft` is never saved: the client
+submits it with `POST /orders/{id}/complaints` after the customer confirms.
+
 Complaint and review analyses run automatically in the background after submission.
 Admins see them as `ai_analysis` on `/admin/complaints/{id}` and on evidence items. SMEs see
 only `ai_sentiment` on `/sme/reviews`. AI output always has `provenance: AI_ANALYSIS` and never

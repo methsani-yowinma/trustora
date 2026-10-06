@@ -434,3 +434,33 @@ export type TrustExplanation = {
   rules_version: string;
   generated_at: string;
 };
+
+// --- Trustora AI chat (Phase 8) ---------------------------------------------------------
+export type ChatRole = "user" | "assistant";
+
+export interface ChatTurn {
+  role: ChatRole;
+  text: string;
+}
+
+export interface ChatSource {
+  kind: "STORE" | "PRODUCT" | "ORDER";
+  ref: string;
+  label: string;
+}
+
+export interface ComplaintDraft {
+  order_id: string;
+  order_number: string;
+  category: string;
+  description: string;
+}
+
+export interface ChatResponse {
+  reply: string;
+  used_tools: string[];
+  sources: ChatSource[];
+  draft: ComplaintDraft | null;
+  model: string;
+  provenance: "AI_ANALYSIS";
+}

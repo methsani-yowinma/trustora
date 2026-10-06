@@ -867,5 +867,50 @@
       "HIGH": "High"
     },
     "reviewSentiment": "AI: {sentiment}"
+  },
+  "chat": {
+    "name": "Trustora AI",
+    "tagline": "Answers from Trustora's verified records",
+    "open": "Open Trustora AI assistant",
+    "close": "Close assistant",
+    "newChat": "New chat",
+    "disclaimer": "AI can make mistakes. Trust scores are calculated by Trustora's rules, not by AI.",
+    "greeting": "Hi! I can explain seller and product trust, and help with your orders and complaints.",
+    "suggestionsLabel": "Try asking",
+    "suggest": {
+      "storeTrust": "Is this seller trustworthy?",
+      "storeScore": "What affects this store's trust score?",
+      "productVerified": "Is this product verified?",
+      "productSeller": "Can I trust the seller of this product?",
+      "whereOrder": "Where is my order?",
+      "howScore": "How does Trustora calculate trust?",
+      "myScore": "Why is my trust score low?",
+      "improve": "How can I improve my trust score?",
+      "problem": "I have a problem with my order"
+    },
+    "placeholder": "Ask about a seller, product or order…",
+    "inputLabel": "Message Trustora AI",
+    "send": "Send",
+    "thinking": "Checking Trustora records…",
+    "you": "You",
+    "sources": "Based on",
+    "source": {
+      "STORE": "Trust Passport: {label}",
+      "PRODUCT": "Product: {label}",
+      "ORDER": "Order {label}"
+    },
+    "draftTitle": "Complaint draft (not submitted)",
+    "draftNote": "Check the details, then submit. You can add photos on the order page.",
+    "draftOrder": "Order {number}",
+    "category": "Category",
+    "description": "Description",
+    "descriptionTooShort": "Please describe the problem in at least 10 characters.",
+    "submit": "Submit complaint",
+    "submitting": "Submitting…",
+    "discard": "Discard",
+    "discarded": "Draft discarded. Nothing was submitted.",
+    "submitted": "Complaint submitted. The seller will be asked to respond.",
+    "viewOrder": "View order",
+    "unavailable": "Trustora AI is not available right now. Please try again later."
   }
 }

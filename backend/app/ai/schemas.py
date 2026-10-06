@@ -1,9 +1,10 @@
 """Structured outputs requested from Gemini (also used as the JSON schema sent to the model)."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 from app.ai.output import AiAnalysisOut
 from app.complaints.schemas import ComplaintCategory
@@ -57,3 +58,59 @@ class TrustExplanationOut(BaseModel):
     model: str | None
     rules_version: str
     generated_at: datetime
+
+
+# --- Trustora AI chat -----------------------------------------------------------------------
+class ChatTurnIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: Literal["user", "assistant"]
+    text: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+
+
+class ChatContextIn(BaseModel):
+    """What the user is looking at, so "this seller" / "this product" can be resolved."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    store_slug: Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9-]{3,40}$")] | None = None
+    product_id: UUID | None = None
+
+
+class ChatRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    # Stateless: the client sends the recent conversation (oldest first, last turn = user).
+    messages: list[ChatTurnIn] = Field(min_length=1, max_length=12)
+    locale: Literal["en", "si"] = "en"
+    context: ChatContextIn | None = None
+
+    @model_validator(mode="after")
+    def _last_is_user(self) -> "ChatRequest":
+        if self.messages[-1].role != "user":
+            raise ValueError("The last message must be from the user")
+        return self
+
+
+class ChatSource(BaseModel):
+    kind: Literal["STORE", "PRODUCT", "ORDER"]
+    ref: str
+    label: str
+
+
+class ComplaintDraft(BaseModel):
+    """Prepared by the assistant, submitted only if the customer confirms it in the UI."""
+
+    order_id: str
+    order_number: str
+    category: str
+    description: str
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    used_tools: list[str]
+    sources: list[ChatSource]
+    draft: ComplaintDraft | None = None
+    model: str
+    provenance: Literal["AI_ANALYSIS"] = "AI_ANALYSIS"
