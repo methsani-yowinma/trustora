@@ -36,7 +36,8 @@ trustora/
 | 5 | Commerce: browsing, cart, checkout, orders, delivery status | ✅ Approved |
 | 6 | Customer Trust: reviews, complaints, evidence workflows, trust explanations | ✅ Approved |
 | 7 | Gemini: complaint/review analysis, document reading, trust explanations | ✅ Approved |
-| 8–10 | Trustora AI · Security · Testing | Pending |
+| 8 | Trustora AI: grounded, role-aware chatbot with function calling (en/si) | ✅ Approved |
+| 9–10 | Security · Testing | Pending |
 
 ## Prerequisites
 
@@ -84,7 +85,9 @@ uvicorn app.main:create_app --factory --reload --port 8000
 - `GEMINI_API_KEY` (optional): enables AI analysis and AI-written trust summaries. Without it,
   everything works and summaries use a rules-based template. Use a **paid-tier** key before
   processing real customer data. `GEMINI_MODEL` defaults to `gemini-2.5-flash`.
-  See [ADR 0008](docs/decisions/0008-gemini-integration.md).
+  See [ADR 0008](docs/decisions/0008-gemini-integration.md). The same key powers the Trustora AI
+  assistant ([ADR 0009](docs/decisions/0009-trustora-ai-chatbot.md)); without it the assistant
+  reports that it is unavailable.
 
 ## 3. Frontend
 
@@ -98,7 +101,7 @@ npm run dev                       # http://localhost:3000 → redirects to /en
 ## Testing
 
 ```bash
-# Backend: 291 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
+# Backend: 323 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
 cd backend && pytest
 ruff check . && ruff format --check .
 

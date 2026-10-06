@@ -4,13 +4,21 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Path, Request
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.ai import document_analyzer, trust_explainer
+from app.ai import chatbot, document_analyzer, trust_explainer
+from app.ai.chat_tools import ToolContext
 from app.ai.gemini_client import AiClient
 from app.ai.output import AiAnalysisOut
-from app.ai.schemas import TrustExplanationOut
-from app.auth.dependencies import get_anon_db, get_storage, get_user_db, require_role
+from app.ai.schemas import ChatRequest, ChatResponse, TrustExplanationOut
+from app.auth.dependencies import (
+    get_anon_db,
+    get_optional_identity,
+    get_storage,
+    get_user_db,
+    require_role,
+)
 from app.auth.models import CurrentUser, UserRole
 from app.core.rate_limit import rate_limit
+from app.core.security import AuthClaims
 from app.core.storage import StorageClient
 
 
@@ -56,3 +64,26 @@ async def analyze_evidence(
     ai: Ai,
 ) -> AiAnalysisOut:
     return await document_analyzer.analyze_evidence(conn, storage, ai, admin, str(evidence_id))
+
+
+chat_router = APIRouter(tags=["ai"])
+
+
+@chat_router.post(
+    "/chat",
+    response_model=ChatResponse,
+    dependencies=[Depends(rate_limit("20/minute", scope="chat"))],
+)
+async def trustora_ai_chat(
+    body: ChatRequest,
+    request: Request,
+    identity: Annotated[tuple[CurrentUser, AuthClaims] | None, Depends(get_optional_identity)],
+    storage: Storage,
+    ai: Ai,
+) -> ChatResponse:
+    """Trustora AI. Visitors get public trust tools; signed-in users also get their own data."""
+    user, claims = identity if identity else (None, None)
+    ctx = ToolContext(
+        db=request.app.state.db, storage=storage, locale=body.locale, user=user, claims=claims
+    )
+    return await chatbot.chat(ai, ctx, body)
