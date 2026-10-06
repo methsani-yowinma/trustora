@@ -279,7 +279,7 @@ async def test_cod_checkout(
         "mock_reference": None,
     }
     assert order["delivery"]["status"] == "PENDING" and order["delivery"]["district"] == "COLOMBO"
-    assert order["allowed_actions"] == ["cancel"]
+    assert order["allowed_actions"] == ["cancel", "complain"]
     assert order["items"][0]["product_name_i18n"]["en"] in ("Batik sarong", "Clay pot")
     assert await _stock(engine, sarong["id"]) == 3 and await _stock(engine, pot["id"]) == 1
 
@@ -417,11 +417,14 @@ async def test_full_delivery_lifecycle(
     )  # COD collected
 
     customer_view = (await client.get(f"{API}/orders/{oid}", headers=customer.headers)).json()
-    assert customer_view["allowed_actions"] == ["confirm_receipt"]
+    assert customer_view["allowed_actions"] == ["confirm_receipt", "review", "complain"]
     completed = (
         await client.post(f"{API}/orders/{oid}/confirm-receipt", headers=customer.headers)
     ).json()
-    assert completed["status"] == "COMPLETED" and completed["allowed_actions"] == []
+    assert completed["status"] == "COMPLETED" and completed["allowed_actions"] == [
+        "review",
+        "complain",
+    ]
 
     passport = (await client.get(f"{API}/stores/{store['slug']}/passport")).json()
     assert "COMPLETED_ORDERS" in {s["code"] for s in passport["positive_signals"]}

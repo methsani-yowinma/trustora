@@ -73,6 +73,17 @@ No client role has any write grant: only the backend trust engine writes them.
 Clients can only **read** orders they are a party to (customer, the SME, admins); every write goes
 through the backend state machine.
 
+## Phase 6 — Reviews and complaints (`20261009000000_reviews_complaints.sql`)
+
+| Table | Purpose / key rules |
+| ----- | ------------------- |
+| `reviews` | One per delivered order (`order_id` unique), rating 1–5, optional comment, one public SME response. Public readers never get `customer_id` (column grant). |
+| `complaints` | Order-bound customer allegation: category, description, status `SUBMITTED` → `SME_RESPONDED` → (`UNDER_REVIEW`) → `RESOLVED` / `UPHELD` / `DISMISSED`; at most one open per order (partial unique index). Private to the customer, the SME and admins. |
+| `evidence.complaint_id` | Complaint evidence: customer uploads are `CUSTOMER_ALLEGATION`, seller uploads `SELLER_CLAIM`; both parties can see it (`can_view_complaint`). |
+
+The public complaint record (`GET /stores/{slug}/complaints/summary`) exposes only counts by
+category and outcome — never complaint text or identities.
+
 ## Access matrix (enforced by grants + RLS)
 
 | Table | anon | authenticated (self) | authenticated (admin) |
@@ -87,6 +98,8 @@ through the backend state machine.
 | product_images | images of public products | select own | select |
 | categories | select | select | select |
 | trust_scores / trust_signals / trust_score_history | public stores | public stores + own | all (read only) |
+| reviews | public-store reviews without reviewer id | own (customer) / own store (SME) | all |
+| complaints | — | own (customer) / own store (SME) — read only | all (read only) |
 | orders / order_items / payments / deliveries | — | own orders (customer) or orders placed with own store (SME) — read only | all (read only) |
 
 No client role can insert profiles, evidence, verifications, social accounts or images, or write audit logs.
