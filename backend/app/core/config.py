@@ -19,6 +19,20 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
 
     gemini_api_key: SecretStr | None = None
+    # Override when Google retires or renames the default model.
+    gemini_model: str = "gemini-2.5-flash"
+
+    @field_validator("gemini_model", mode="before")
+    @classmethod
+    def _default_model(cls, value: object) -> object:
+        return value or "gemini-2.5-flash"
+
+    @field_validator(
+        "gemini_api_key", "supabase_service_role_key", "supabase_jwt_secret", mode="before"
+    )
+    @classmethod
+    def _empty_secret_is_unset(cls, value: object) -> object:
+        return value or None
 
     @field_validator("supabase_url")
     @classmethod

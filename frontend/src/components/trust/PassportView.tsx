@@ -6,7 +6,9 @@ import type {
   EvidenceProvenance,
   Passport,
   PublicComplaintSummary as PublicComplaintSummaryData,
+  TrustExplanation,
 } from "@/lib/api/types";
+import { AiSummaryCard } from "@/components/ai/AiViews";
 import { formatDate } from "@/lib/localize";
 
 import { SignalList } from "./SignalList";
@@ -18,9 +20,11 @@ import { TrustScoreCard } from "./TrustScoreCard";
 export function PassportView({
   passport,
   complaints,
+  explanation,
 }: {
   passport: Passport;
   complaints?: PublicComplaintSummaryData;
+  explanation?: TrustExplanation | null;
 }) {
   const t = useTranslations("passport");
   const locale = useLocale();
@@ -30,6 +34,7 @@ export function PassportView({
   return (
     <div className="space-y-6">
       <TrustScoreCard trust={trust} />
+      {explanation ? <AiSummaryCard explanation={explanation} /> : null}
 
       <Card className="space-y-5">
         <div className="space-y-1">

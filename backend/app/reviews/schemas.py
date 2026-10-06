@@ -32,6 +32,8 @@ class ReviewOut(BaseModel):
 
 class SmeReviewOut(ReviewOut):
     order_number: str
+    # AI analysis of the review text (labelled as such in the UI).
+    ai_sentiment: str | None = None
 
 
 class ReviewPage(BaseModel):

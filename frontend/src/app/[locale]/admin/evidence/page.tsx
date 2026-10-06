@@ -67,7 +67,7 @@ export default async function AdminEvidencePage({ params, searchParams }: PagePr
                       </div>
                     ) : null}
                   </dl>
-                  <EvidenceList items={[item]} emptyText="" />
+                  <EvidenceList items={[item]} emptyText="" adminAi />
                   {item.flagged_misleading ? <Badge tone="risk">{t("flaggedMisleading")}</Badge> : null}
                   {item.review_note ? <p className="text-sm text-ink-muted">{item.review_note}</p> : null}
                 </div>

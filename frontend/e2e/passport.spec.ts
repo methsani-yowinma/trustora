@@ -60,3 +60,18 @@ test("trust management pages require sign-in", async ({ page }) => {
   await page.goto("/en/admin/evidence");
   await expect(page).toHaveURL(/\/login\?next=%2Fen%2Fadmin%2Fevidence$/);
 });
+
+test("passport shows a rules-based summary when AI is not configured", async ({ page }) => {
+  await page.goto("/en/stores/ceylon-crafts/passport");
+  await expect(page.getByRole("heading", { level: 2, name: "Summary", exact: true })).toBeVisible();
+  await expect(page.getByText(/^Based on the available evidence, .+ \(62\/100\)/)).toBeVisible();
+  await expect(page.getByText("Generated from the signals on this page.")).toBeVisible();
+  await expect(page.getByText("AI summary")).toHaveCount(0);
+});
+
+test("rules-based summary is written in Sinhala on /si", async ({ page }) => {
+  await page.goto("/si/stores/ceylon-crafts/passport");
+  await expect(page.getByRole("heading", { level: 2, name: "සාරාංශය", exact: true })).toBeVisible();
+  await expect(page.getByText(/පවතින සාක්ෂි මත පදනම්ව/)).toBeVisible();
+  await expect(page.getByText(/පවතින සාක්ෂි මත පදනම්ව/)).toHaveAttribute("lang", "si");
+});

@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { AiAnalysisView } from "@/components/ai/AiViews";
 import { ComplaintDecisionForm } from "@/components/complaints/ComplaintForms";
 import { ComplaintThread } from "@/components/complaints/ComplaintThread";
 import { AccessState } from "@/components/layout/AccessState";
@@ -43,7 +44,8 @@ export default async function AdminComplaintPage({ params }: PageProps<"/[locale
         }
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-        <Card>
+        <Card className="space-y-4">
+          {complaint.ai_analysis ? <AiAnalysisView analysis={complaint.ai_analysis} /> : null}
           <ComplaintThread complaint={complaint} />
         </Card>
         {complaint.allowed_actions.includes("decide") ? (

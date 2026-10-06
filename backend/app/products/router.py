@@ -32,8 +32,8 @@ from app.products.schemas import (
 
 UPLOAD_LIMIT = Depends(rate_limit("30/minute", scope="uploads"))
 
-Db = Annotated[AsyncConnection, Depends(get_user_db)]
-AnonDb = Annotated[AsyncConnection, Depends(get_anon_db)]
+Db = Annotated[AsyncConnection, Depends(get_user_db, scope="function")]
+AnonDb = Annotated[AsyncConnection, Depends(get_anon_db, scope="function")]
 Storage = Annotated[StorageClient, Depends(get_storage)]
 SmeUser = Annotated[CurrentUser, Depends(require_role(UserRole.SME))]
 

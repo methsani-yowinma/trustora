@@ -152,3 +152,16 @@ async def list_evidence(
             )
         )
     return items
+
+
+async def with_ai_analyses(
+    conn: AsyncConnection, items: list[EvidenceFileOut]
+) -> list[EvidenceFileOut]:
+    """Admin views: attach the latest document analysis to each evidence item."""
+    from app.ai import store as ai_store  # local import keeps evidence <- ai dependencies one-way
+
+    latest = await ai_store.latest(conn, "DOCUMENT", [i.id for i in items])
+    return [
+        i.model_copy(update={"ai_analysis": ai_store.to_out(latest[i.id])}) if i.id in latest else i
+        for i in items
+    ]

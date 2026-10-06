@@ -82,6 +82,17 @@ Levels: VERIFIED (admin-verified business, ≥85 and ≥10 completed orders) · 
 DEVELOPING 55–69 or limited history · CAUTION 40–54 · HIGH_RISK <40. Two or more upheld
 complaints in 90 days cap the level at CAUTION.
 
+## Gemini (Phase 7)
+
+```text
+complaint / review created ──► background task ──► redact ──► Gemini (JSON schema) ──► ai_analyses
+admin "Analyze with AI"   ──► SHA-256 check ──► Gemini ──► deterministic checks ──► ai_analyses
+passport view              ──► facts ──► cache? ──► Gemini text ──► guard ──► (or template)
+```
+
+All calls go through `app/ai/gemini_client.py`. The key stays on the server, and results are
+advisory and labelled `AI_ANALYSIS`. See [ADR 0008](../decisions/0008-gemini-integration.md).
+
 ## Approved MVP decisions
 
 1. Frontend reads and writes domain data only through FastAPI; RLS still enforced per request.

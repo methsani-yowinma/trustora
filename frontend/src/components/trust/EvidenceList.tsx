@@ -1,13 +1,26 @@
 import { FileText } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { AnalyzeButton } from "@/components/ai/AnalyzeButton";
+import { AiAnalysisView } from "@/components/ai/AiViews";
 import type { EvidenceFile } from "@/lib/api/types";
 import { formatDate } from "@/lib/localize";
 
 import { ProvenanceBadge, ReviewStatusBadge } from "./StatusBadges";
 
+const ANALYZABLE = new Set(["BUSINESS_DOCUMENT", "PRODUCT_DOCUMENT", "PRODUCT_IMAGE"]);
+
 /** Evidence with its provenance and review state, plus the integrity hash for auditability. */
-export function EvidenceList({ items, emptyText }: { items: EvidenceFile[]; emptyText: string }) {
+export function EvidenceList({
+  items,
+  emptyText,
+  adminAi = false,
+}: {
+  items: EvidenceFile[];
+  emptyText: string;
+  /** Admin views: show stored AI analyses and offer "Analyze with AI". */
+  adminAi?: boolean;
+}) {
   const t = useTranslations("admin.verifications");
   const locale = useLocale();
 
@@ -47,6 +60,12 @@ export function EvidenceList({ items, emptyText }: { items: EvidenceFile[]; empt
             >
               {t("openDocument")}
             </a>
+          ) : null}
+          {adminAi && ANALYZABLE.has(item.type) ? (
+            <div className="w-full space-y-2">
+              {item.ai_analysis ? <AiAnalysisView analysis={item.ai_analysis} /> : null}
+              <AnalyzeButton evidenceId={item.id} again={Boolean(item.ai_analysis)} />
+            </div>
           ) : null}
         </li>
       ))}

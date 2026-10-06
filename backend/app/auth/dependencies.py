@@ -44,7 +44,11 @@ async def get_user_db(
     claims: AuthClaims = Depends(get_auth_claims),
     db: Database = Depends(get_database),
 ) -> AsyncIterator[AsyncConnection]:
-    """One RLS-scoped transaction per request, committed when the route succeeds."""
+    """One RLS-scoped transaction per request, committed when the route succeeds.
+
+    Always declare it with ``scope="function"`` so the commit happens *before* the response is
+    sent: commit errors reach the client, and background tasks only ever see committed data.
+    """
     async with db.user_transaction(claims) as conn:
         yield conn
 
@@ -57,7 +61,7 @@ async def get_anon_db(db: Database = Depends(get_database)) -> AsyncIterator[Asy
 
 async def get_current_user(
     claims: AuthClaims = Depends(get_auth_claims),
-    conn: AsyncConnection = Depends(get_user_db),
+    conn: AsyncConnection = Depends(get_user_db, scope="function"),
 ) -> CurrentUser:
     row = (
         (

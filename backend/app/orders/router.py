@@ -20,8 +20,8 @@ from app.orders.schemas import (
     SmeStatusUpdate,
 )
 
-Db = Annotated[AsyncConnection, Depends(get_user_db)]
-AnonDb = Annotated[AsyncConnection, Depends(get_anon_db)]
+Db = Annotated[AsyncConnection, Depends(get_user_db, scope="function")]
+AnonDb = Annotated[AsyncConnection, Depends(get_anon_db, scope="function")]
 Storage = Annotated[StorageClient, Depends(get_storage)]
 Customer = Annotated[CurrentUser, Depends(require_role(UserRole.CUSTOMER))]
 Sme = Annotated[CurrentUser, Depends(require_role(UserRole.SME))]

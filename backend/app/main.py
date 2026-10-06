@@ -6,6 +6,9 @@ import httpx
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.ai.gemini_client import AiClient, create_ai_client
+from app.ai.router import admin_router as ai_admin_router
+from app.ai.router import public_router as ai_public_router
 from app.complaints.router import admin_router as complaints_admin_router
 from app.complaints.router import public_router as complaints_public_router
 from app.complaints.router import router as complaints_router
@@ -43,6 +46,7 @@ def create_app(
     db: Database | None = None,
     token_verifier: TokenVerifier | None = None,
     storage: StorageClient | None = None,
+    ai: AiClient | None = None,
 ) -> FastAPI:
     settings = settings or get_settings()
     configure_logging()
@@ -67,6 +71,10 @@ def create_app(
 
     http_client = httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=5.0))
     service_key = settings.supabase_service_role_key
+    key = settings.gemini_api_key
+    app.state.ai = ai or create_ai_client(
+        key.get_secret_value() if key else None, settings.gemini_model
+    )
     app.state.storage = storage or (
         SupabaseStorage(settings.storage_url, service_key.get_secret_value(), http_client)
         if service_key
@@ -118,6 +126,8 @@ def create_app(
     api.include_router(complaints_public_router)
     api.include_router(complaints_sme_router)
     api.include_router(complaints_admin_router)
+    api.include_router(ai_public_router)
+    api.include_router(ai_admin_router)
     app.include_router(health_router)
     app.include_router(api)
     return app

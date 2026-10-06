@@ -4,6 +4,7 @@ import { AccessState } from "@/components/layout/AccessState";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ReviewResponseForm } from "@/components/reviews/ReviewResponseForm";
 import { ReviewItem } from "@/components/reviews/Reviews";
+import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import type { Locale } from "@/i18n/routing";
 import type { SmeReview } from "@/lib/api/types";
@@ -17,7 +18,7 @@ export default async function SmeReviewsPage({ params }: PageProps<"/[locale]/sm
   if (guard.kind !== "allowed") {
     return <AccessState kind={guard.kind === "forbidden" ? "forbidden" : "unavailable"} roles={["SME"]} />;
   }
-  const t = await getTranslations("smeReviews");
+  const [t, tAi] = await Promise.all([getTranslations("smeReviews"), getTranslations("ai")]);
   const reviews = await serverApi<SmeReview[]>("/sme/reviews");
 
   return (
@@ -30,7 +31,14 @@ export default async function SmeReviewsPage({ params }: PageProps<"/[locale]/sm
           {reviews.map((review) => (
             <li key={review.id}>
               <Card className="space-y-2 py-2">
-                <p className="pt-2 text-xs text-ink-muted">{t("order", { number: review.order_number })}</p>
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <p className="text-xs text-ink-muted">{t("order", { number: review.order_number })}</p>
+                  {review.ai_sentiment ? (
+                    <Badge tone="developing">
+                      {tAi("reviewSentiment", { sentiment: tAi(`sentimentValue.${review.ai_sentiment as "NEUTRAL"}`) })}
+                    </Badge>
+                  ) : null}
+                </div>
                 <ul>
                   <ReviewItem review={review} />
                 </ul>

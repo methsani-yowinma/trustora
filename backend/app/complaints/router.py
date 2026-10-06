@@ -1,9 +1,20 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Path, UploadFile, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    Path,
+    Request,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.ai.review_analyzer import analyze_complaint
 from app.auth.dependencies import get_anon_db, get_storage, get_user_db, require_role
 from app.auth.models import CurrentUser, UserRole
 from app.complaints import service
@@ -25,8 +36,8 @@ from app.core.uploads import DOCUMENT_KINDS, MAX_DOCUMENT_BYTES, ValidatedFile, 
 MAX_FILES_PER_UPLOAD = 3
 UPLOAD_LIMIT = Depends(rate_limit("30/minute", scope="uploads"))
 
-Db = Annotated[AsyncConnection, Depends(get_user_db)]
-AnonDb = Annotated[AsyncConnection, Depends(get_anon_db)]
+Db = Annotated[AsyncConnection, Depends(get_user_db, scope="function")]
+AnonDb = Annotated[AsyncConnection, Depends(get_anon_db, scope="function")]
 Storage = Annotated[StorageClient, Depends(get_storage)]
 Customer = Annotated[CurrentUser, Depends(require_role(UserRole.CUSTOMER))]
 Sme = Annotated[CurrentUser, Depends(require_role(UserRole.SME))]
@@ -64,10 +75,12 @@ async def create_complaint(
     storage: Storage,
     category: Annotated[ComplaintCategory, Form()],
     description: Annotated[Description, Form()],
+    request: Request,
+    background: BackgroundTasks,
     files: Annotated[list[UploadFile] | None, File()] = None,
 ) -> ComplaintOut:
     validated = await _read_files(files)
-    return await service.create(
+    complaint = await service.create(
         conn,
         storage,
         user,
@@ -76,6 +89,9 @@ async def create_complaint(
         description=description,
         files=validated,
     )
+    # AI triage runs after the response (and after this transaction has committed).
+    background.add_task(analyze_complaint, request.app.state.db, request.app.state.ai, complaint.id)
+    return complaint
 
 
 @router.get("/complaints", response_model=list[ComplaintSummaryItem])

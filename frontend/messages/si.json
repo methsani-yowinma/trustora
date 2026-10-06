@@ -160,7 +160,10 @@
     "duplicate_submission": "මෙම ඇණවුම දැනටමත් යොමු කර ඇත.",
     "review_not_allowed": "බෙදා හැරි ඇණවුම් පමණක්, එක් වරක්, දින 90ක් ඇතුළත සමාලෝචනය කළ හැක.",
     "complaint_open": "මෙම ඇණවුමට දැනටමත් විවෘත පැමිණිල්ලක් ඇත.",
-    "complaint_window_closed": "ඇණවුමෙන් දින 90ක් ඇතුළත පැමිණිලි ඉදිරිපත් කළ හැක."
+    "complaint_window_closed": "ඇණවුමෙන් දින 90ක් ඇතුළත පැමිණිලි ඉදිරිපත් කළ හැක.",
+    "not_analyzable": "මෙම සාක්ෂි විශ්ලේෂණය කළ නොහැක.",
+    "ai_unavailable": "AI විශ්ලේෂණය දැනට ලබා ගත නොහැක.",
+    "integrity_mismatch": "ගබඩා කළ ගොනුව එහි වාර්තාගත hash අගයට නොගැළපේ."
   },
   "verificationStatus": {
     "UNVERIFIED": "තහවුරු කර නැත",
@@ -811,5 +814,58 @@
     "noteRequired": "සටහනක් අවශ්‍යයි.",
     "store": "වෙළඳසැල",
     "order": "ඇණවුම"
+  },
+  "ai": {
+    "summaryTitle": "සාරාංශය",
+    "aiSummary": "AI සාරාංශය",
+    "aiNote": "මෙම පිටුවේ සංඥා මත පදනම්ව AI මගින් ලියන ලදී. ලකුණු ගණනය කරනු ලබන්නේ AI මගින් නොව Trustora නීති මගිනි.",
+    "templateNote": "මෙම පිටුවේ සංඥා වලින් ජනනය කරන ලදී.",
+    "analysis": "AI විශ්ලේෂණය",
+    "analysisNote": "AI විශ්ලේෂණය — තීරණය කිරීමට පෙර ලේඛනය ඔබම පරීක්ෂා කරන්න. AI කිසි විටෙක තහවුරු කිරීමේ තීරණ ගන්නේ නැත.",
+    "analyze": "AI මගින් විශ්ලේෂණය කරන්න",
+    "analyzing": "විශ්ලේෂණය කරමින්…",
+    "reanalyze": "නැවත විශ්ලේෂණය කරන්න",
+    "failed": "AI හට මෙය විශ්ලේෂණය කළ නොහැකි විය. අතින් සමාලෝචනය කරන්න.",
+    "skipped": "AI විශ්ලේෂණය සකසා නැත.",
+    "extracted": "AI මගින් උපුටා ගත්",
+    "checks": "අයදුම්පත සමඟ Trustora මගින් පරීක්ෂා කළ",
+    "field": {
+      "document_type": "ලේඛන වර්ගය",
+      "business_name": "ව්‍යාපාර නාමය",
+      "registration_number": "ලියාපදිංචි අංකය",
+      "issue_date": "නිකුත් කළ දිනය",
+      "issuer": "නිකුත් කළ ආයතනය",
+      "product_names": "සඳහන් නිෂ්පාදන",
+      "legibility": "පැහැදිලි බව",
+      "notes": "සටහන්"
+    },
+    "check": {
+      "registered_name": "ලියාපදිංචි නාමය",
+      "registration_number": "ලියාපදිංචි අංකය",
+      "product_name": "නිෂ්පාදනයේ නම"
+    },
+    "checkResult": {
+      "MATCH": "ගැළපේ",
+      "PARTIAL": "අර්ධ වශයෙන් ගැළපේ",
+      "MISMATCH": "නොගැළපේ",
+      "NOT_FOUND": "ලේඛනයේ හමු නොවීය"
+    },
+    "triage": "AI වර්ගීකරණය",
+    "triageNote": "ප්‍රමුඛතාව තීරණය කිරීමට උපකාර වන පරිදි පාරිභෝගිකයාගේ චෝදනාව AI මගින් වර්ගීකරණය කිරීම. එය සොයාගැනීමක් නොවේ.",
+    "suggestedCategory": "යෝජිත ප්‍රවර්ගය",
+    "severity": "බරපතලකම",
+    "sentiment": "හැඟීම",
+    "summary": "සාරාංශය",
+    "sentimentValue": {
+      "POSITIVE": "ධනාත්මක",
+      "NEUTRAL": "මධ්‍යස්ථ",
+      "NEGATIVE": "ඍණාත්මක"
+    },
+    "severityValue": {
+      "LOW": "අඩු",
+      "MEDIUM": "මධ්‍යම",
+      "HIGH": "ඉහළ"
+    },
+    "reviewSentiment": "AI: {sentiment}"
   }
 }
