@@ -38,7 +38,7 @@ trustora/
 | 7 | Gemini: complaint/review analysis, document reading, trust explanations | ✅ Approved |
 | 8 | Trustora AI: grounded, role-aware chatbot with function calling (en/si) | ✅ Approved |
 | 9 | Security hardening: review, fixes, regression tests ([report](docs/security/README.md)) | ✅ Approved |
-| 10 | Testing | Pending |
+| 10 | Testing: unit, API, trust engine, auth, authorization, chatbot, frontend, end-to-end ([guide](docs/testing/README.md)) | ✅ Approved |
 
 ## Prerequisites
 
@@ -101,16 +101,21 @@ npm run dev                       # http://localhost:3000 → redirects to /en
 
 ## Testing
 
+See the [testing guide](docs/testing/README.md) for the layers and where each requirement is
+tested. Nothing here needs Docker, a Supabase project or a Gemini key.
+
 ```bash
-# Backend: 357 tests incl. real-Postgres RLS tests (embedded PostgreSQL via pgserver; no Docker)
-cd backend && pytest
+# Backend (from backend/): API + real-Postgres RLS tests on embedded PostgreSQL (pgserver)
+pytest                              # 373 tests; live AI tests are opt-in (below)
+pytest --cov                        # coverage: 96% of app/
+GEMINI_API_KEY=... pytest -m live   # real-Gemini checks (Sinhala answers, grounding, isolation)
 ruff check . && ruff format --check .
 
-# Frontend
-cd frontend
+# Frontend (from frontend/)
+npm test                            # Vitest unit/component tests (53 tests)
 npm run lint && npm run typecheck && npm run check:i18n
-npx playwright install chromium   # or use an installed browser: PW_CHANNEL=msedge
-npm run test:e2e                  # seeded API (backend/tests/e2e_server.py) + app; desktop + mobile
+npx playwright install chromium     # or use an installed browser: PW_CHANNEL=msedge
+npm run test:e2e                    # 98 runs: desktop + phone, signed-out and signed-in
 ```
 
 A Postman collection is in [postman/](postman/).

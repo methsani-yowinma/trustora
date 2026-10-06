@@ -108,3 +108,8 @@ The code can't enforce these; set them when deploying.
   (e.g. Redis); see ADR 0006.
 - **Image metadata removal is container-level.** Pixel data is untouched, so faces or visible
   addresses inside photos aren't, and can't be, detected.
+- **Dev-only npm advisory.** `npm audit` (including dev dependencies) reports `braces` (ReDoS,
+  GHSA-vfj7-8cjw-p6xm) through `eslint-config-next`. It only runs in local linting, never in the
+  built app, and npm's suggested fix downgrades to eslint-config-next 14, a breaking change.
+  Revisit when eslint-config-next updates its dependency. Production dependencies have 0 known
+  vulnerabilities.
