@@ -13,7 +13,8 @@ stays on the server, and personal data must be protected.
 **One adapter, one SDK.** `app/ai/gemini_client.py` wraps `google-genai` behind a small `AiClient`
 protocol (`generate_json`, `generate_text`). Domain code depends on the protocol, so tests use a
 fake. With no `GEMINI_API_KEY` set, a `DisabledAiClient` is used and every feature still works
-without AI (as SKIPPED records or the template explanation). Default model: `gemini-2.5-flash`
+without AI (as SKIPPED records or the template explanation). Default model: `gemini-3.5-flash`
+with fallbacks (see *Model availability* below)
 (`GEMINI_MODEL`). Transient errors (5xx, 429, timeouts) get up to 3 attempts with backoff. Logs
 record only the error class and status, never prompts, outputs or keys.
 
@@ -47,6 +48,22 @@ only when the facts change.
 
 **Background work.** Complaint and review analysis runs as a FastAPI background task after the
 response, in its own transaction. AI failures never affect the customer's submission.
+
+## Model availability (updated 2026-10-07)
+The original default, `gemini-2.5-flash`, was retired for new API keys (404), and current models
+sometimes return 503 under high demand or 429 when a key's quota is used up. The client now tries
+`GEMINI_MODEL` and then each of `GEMINI_FALLBACK_MODELS` in order:
+- **Retired model (404):** skipped from then on, with a log naming the model.
+- **Busy or rate-limited model:** the next model is tried.
+- **Fallback answers:** it is used first for 5 minutes before the primary is tried again.
+- **Every model busy:** the API returns `503 ai_busy` ("try again in a minute"), kept apart from
+  `ai_unavailable` (not configured or no usable model).
+- **Bad key or bad request:** reported immediately, without retries.
+
+Chat replies are converted to plain text (the model sometimes adds Markdown). The reply guard
+allows negated disclaimers ("never claims … 100% safe", "not a guarantee") but blocks absolute
+claims and accusations. General "how does trust work" questions use the `get_trust_methodology`
+tool, whose answer is generated from `trust_weights.py`.
 
 ## Related change: dependency scope
 The installed FastAPI (0.142) runs `yield` dependencies with `scope="request"` by default, finishing them only

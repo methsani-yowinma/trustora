@@ -141,7 +141,9 @@ export function TrustoraAI() {
       setError(
         code === "ai_unavailable"
           ? t("unavailable")
-          : tErrors.has(code as Parameters<typeof tErrors>[0])
+          : code === "ai_busy"
+            ? t("busy")
+            : tErrors.has(code as Parameters<typeof tErrors>[0])
             ? tErrors(code as Parameters<typeof tErrors>[0])
             : tErrors("generic"),
       );
