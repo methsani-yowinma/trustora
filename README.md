@@ -85,7 +85,9 @@ uvicorn app.main:create_app --factory --reload --port 8000
   frontend server as a whole.
 - `GEMINI_API_KEY` (optional): enables AI analysis and AI-written trust summaries. Without it,
   everything works and summaries use a rules-based template. Use a **paid-tier** key before
-  processing real customer data. `GEMINI_MODEL` defaults to `gemini-2.5-flash`.
+  processing real customer data. `GEMINI_MODEL` defaults to `gemini-3.5-flash`; when it is busy
+  or retired, `GEMINI_FALLBACK_MODELS` (default `gemini-3.5-flash-lite,gemini-flash-lite-latest`)
+  are tried in order.
   See [ADR 0008](docs/decisions/0008-gemini-integration.md). The same key powers the Trustora AI
   assistant ([ADR 0009](docs/decisions/0009-trustora-ai-chatbot.md)); without it the assistant
   reports that it is unavailable.

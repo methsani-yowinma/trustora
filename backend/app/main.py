@@ -74,7 +74,9 @@ def create_app(
     service_key = settings.supabase_service_role_key
     key = settings.gemini_api_key
     app.state.ai = ai or create_ai_client(
-        key.get_secret_value() if key else None, settings.gemini_model
+        key.get_secret_value() if key else None,
+        settings.gemini_model,
+        settings.gemini_fallback_list,
     )
     app.state.storage = storage or (
         SupabaseStorage(settings.storage_url, service_key.get_secret_value(), http_client)

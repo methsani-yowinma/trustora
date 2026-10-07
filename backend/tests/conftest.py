@@ -177,11 +177,16 @@ def create_user(engine: AsyncEngine) -> UserFactory:
 # ---------------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def settings(postgres_uri: str) -> Settings:
+    # Never read the developer's backend/.env: tests must not call real services or use real keys.
     return Settings(
+        _env_file=None,
         app_env="test",
         supabase_url=SUPABASE_URL,
         database_url=postgres_uri,
         cors_origins="http://localhost:3000",
+        gemini_api_key=None,
+        supabase_service_role_key=None,
+        supabase_jwt_secret=None,
     )
 
 

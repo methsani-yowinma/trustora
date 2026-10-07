@@ -37,6 +37,7 @@ from app.core.storage import StorageClient
 from app.orders import service as orders_service
 from app.products import browse
 from app.trust import service as trust_service
+from app.trust import trust_weights as w
 
 logger = logging.getLogger("trustora.ai.chat")
 
@@ -213,6 +214,50 @@ async def get_product_trust(ctx: ToolContext, args: ProductArgs) -> dict[str, An
     }
 
 
+async def get_trust_methodology(ctx: ToolContext, args: NoArgs) -> dict[str, Any]:
+    """How scores are calculated, generated from the engine's own constants (cannot drift)."""
+    weights = {k.lower(): round(v * 100) for k, v in w.DIMENSION_WEIGHTS.items()}
+    return {
+        "rules_version": w.RULES_VERSION,
+        "calculated_by": "Trustora's fixed rules, not AI: the same evidence always gives the same score",
+        "overall_score": "0-100, a weighted average of three dimensions",
+        "dimension_weights_percent": weights,
+        "business_trust": [
+            f"business registration verified by Trustora: +{w.BUSINESS_VERIFIED}",
+            f"contact details confirmed: +{w.CONTACT_CONFIRMED}",
+            f"social media accounts with confirmed ownership: up to +{w.SOCIAL_TWO_OR_MORE}",
+            f"each published policy (returns, refunds, delivery): +{w.POLICY_EACH}",
+            f"time on Trustora: up to +{w.TENURE_365_DAYS}",
+            f"evidence found to be forged or misleading: {w.MISLEADING_EVIDENCE_EACH} each",
+        ],
+        "product_trust": "average over active products of their authenticity status, which comes only "
+        "from evidence reviewed by Trustora (VERIFIED, PARTIALLY_VERIFIED, UNVERIFIED, CONCERN)",
+        "transaction_trust": "delivery success rate, late deliveries, seller cancellations, upheld "
+        f"complaints and verified-buyer ratings; stores with few orders stay near {w.NEUTRAL} until "
+        "they have more history",
+        "levels": {
+            "VERIFIED": f"verified business, score {w.VERIFIED_LEVEL_MIN_SCORE}+ and at least "
+            f"{w.VERIFIED_LEVEL_MIN_ORDERS} completed orders",
+            "TRUSTED": f"score {w.DEVELOPING_BELOW}+ with at least {w.LIMITED_HISTORY_ORDERS} completed orders",
+            "DEVELOPING": f"score {w.CAUTION_BELOW}-{w.DEVELOPING_BELOW - 1}, or limited order history",
+            "CAUTION": f"score {w.HIGH_RISK_BELOW}-{w.CAUTION_BELOW - 1}, or missing evidence",
+            "HIGH_RISK": f"score below {w.HIGH_RISK_BELOW} with negative findings",
+        },
+        "limits": [
+            f"{w.CAUTION_CAP_UPHELD_90D}+ upheld complaints in 90 days cap the level at CAUTION",
+            "misleading evidence caps the level at CAUTION (two or more: HIGH_RISK)",
+        ],
+        "not_scored": [
+            "open complaints: customer allegations are shown but do not change the score until "
+            "Trustora reviews them",
+            "AI analysis of documents, reviews or complaints",
+            "how product photos look",
+        ],
+        "meaning": "a trust level describes the evidence available today and can change; it is not a "
+        "promise about a future order",
+    }
+
+
 # --- Customer tools -------------------------------------------------------------------------
 def _require(ctx: ToolContext) -> tuple[CurrentUser, AuthClaims]:
     if ctx.user is None or ctx.claims is None:  # pragma: no cover - tools are role-gated
@@ -350,6 +395,9 @@ TOOLS = [
     Tool("get_seller_trust", "A store's Trust Passport: trust score and level (calculated by "
          "Trustora's rules), the signals behind it with their sources, evidence counts, 30-day "
          "change and complaint record.", StoreArgs, get_seller_trust, PUBLIC),
+    Tool("get_trust_methodology", "How Trustora calculates trust scores and levels (rules, "
+         "weights, what is and is not scored). Use for general questions about how trust works.",
+         NoArgs, get_trust_methodology, PUBLIC),
     Tool("get_trust_score_history", "A store's trust score history.", HistoryArgs,
          get_trust_score_history, PUBLIC),
     Tool("search_products", "Find products by name.", ProductSearchArgs, search_products, PUBLIC),
