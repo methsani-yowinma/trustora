@@ -46,6 +46,19 @@
       transform: scale(1.15) rotate(90deg);
     }
   }
+
+  /* Home page mascot: a slow, gentle bob (disabled with reduced motion, below). */
+  --animate-robot-float: robot-float 6s ease-in-out infinite;
+
+  @keyframes robot-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
 }
 
 body {
