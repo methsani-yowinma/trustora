@@ -35,11 +35,22 @@ INCOMPLETE = {
 }
 
 # Absolute safety claims the brief forbids; checked on every reply, whatever the prompt says.
-_UNSAFE_CLAIM = re.compile(
-    r"100\s*%|guarantee|\b(?:completely|totally|fully|absolutely)\s+(?:safe|genuine|authentic|"
-    r"legit|trustworthy)|risk[- ]free|\bscam|\bfraud|සම්පූර්ණයෙන්ම\s*(?:ආරක්ෂිත|විශ්වාස)|වංචා",
+# Absolute assurances are allowed only as disclaimers ("Trustora never claims a seller is 100% safe",
+# "a trust level is not a guarantee"): an English negation shortly before, or a Sinhala negation
+# after, within the same sentence. Accusations are never allowed.
+_ABSOLUTE = (
+    r"(?:100\s*%|guarantee\w*|(?:completely|totally|fully|absolutely)\s+(?:safe|genuine|authentic|"
+    r"legit|trustworthy)|risk[- ]free|සම්පූර්ණයෙන්ම\s*(?:ආරක්ෂිත|විශ්වාස)\S*)"
+)
+_ABSOLUTE_CLAIM = re.compile(_ABSOLUTE, re.IGNORECASE)
+_EN_DISCLAIMER = re.compile(
+    r"\b(?:never|not|no|cannot|can't|isn't|aren't|doesn't|does\s+not|without)\b\W+(?:\w+\W+){0,6}?"
+    + _ABSOLUTE,
     re.IGNORECASE,
 )
+_SI_DISCLAIMER = re.compile(_ABSOLUTE + r".{0,40}?(?:නොවේ|නැත|නොකරයි|නොහැක)")
+_ACCUSATION = re.compile(r"\bscam|\bfraud|වංචා", re.IGNORECASE)
+_SENTENCES = re.compile(r"(?<=[.!?])\s+|\n+")
 # Credentials must never appear in a reply (none are given to the model; this is defence in depth).
 _SECRET = re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.|AIza[0-9A-Za-z_-]{20,}|sb_secret_|service_role")
 
@@ -73,10 +84,33 @@ def _history(request: ChatRequest) -> list[ChatItem]:
     ]  # fmt: skip
 
 
+_MARKDOWN = [
+    (re.compile(r"\*\*(.+?)\*\*|__(.+?)__", re.S), lambda m: m.group(1) or m.group(2)),
+    (re.compile(r"^\s{0,3}#{1,6}\s+", re.M), lambda m: ""),
+    (re.compile(r"^(\s*)[*•]\s+", re.M), lambda m: f"{m.group(1)}- "),
+]
+
+
+def plain_text(reply: str) -> str:
+    """The panel shows plain text: drop Markdown emphasis/headings the model may still use."""
+    for pattern, replacement in _MARKDOWN:
+        reply = pattern.sub(replacement, reply)
+    return reply.strip()
+
+
+def _claims_absolute_safety(reply: str) -> bool:
+    for sentence in _SENTENCES.split(reply):
+        claims = len(_ABSOLUTE_CLAIM.findall(sentence))
+        disclaimed = len(_EN_DISCLAIMER.findall(sentence)) + len(_SI_DISCLAIMER.findall(sentence))
+        if claims > disclaimed:
+            return True
+    return False
+
+
 def guard(reply: str, locale: str) -> str:
-    if _UNSAFE_CLAIM.search(reply) or _SECRET.search(reply):
+    if _SECRET.search(reply) or _ACCUSATION.search(reply) or _claims_absolute_safety(reply):
         return INSUFFICIENT[locale]
-    return reply
+    return plain_text(reply)
 
 
 async def chat(ai: AiClient, ctx: ToolContext, request: ChatRequest) -> ChatResponse:
@@ -104,8 +138,10 @@ async def chat(ai: AiClient, ctx: ToolContext, request: ChatRequest) -> ChatResp
             used.extend(c.name for c in calls)
             history.append(ToolResults(results))
     except AiError as exc:
+        # "ai_busy" (overloaded, retry soon) or "ai_unavailable"; never provider details.
+        code = exc.code if exc.code == "ai_busy" else "ai_unavailable"
         raise AppError(
-            "Trustora AI is not available right now", code="ai_unavailable", status_code=503
+            "Trustora AI is not available right now", code=code, status_code=503
         ) from exc
 
     final = guard(reply, request.locale) if reply else INCOMPLETE[request.locale]
@@ -115,5 +151,5 @@ async def chat(ai: AiClient, ctx: ToolContext, request: ChatRequest) -> ChatResp
         used_tools=list(dict.fromkeys(used)),
         sources=[ChatSource(**s) for s in ctx.sources.values()],
         draft=ComplaintDraft(**ctx.draft) if ctx.draft else None,
-        model=ai.model,
+        model=getattr(ai, "last_model", None) or ai.model,
     )

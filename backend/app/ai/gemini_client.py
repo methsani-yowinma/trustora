@@ -8,6 +8,7 @@ before anyone sees them; invalid or unavailable AI is reported as an error, neve
 import asyncio
 import json
 import logging
+import time
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol, TypeVar
 
@@ -17,8 +18,10 @@ logger = logging.getLogger("trustora.ai")
 
 T = TypeVar("T", bound=BaseModel)
 
-TIMEOUT_SECONDS = 25
+TIMEOUT_SECONDS = 20
 MAX_ATTEMPTS = 3
+# After a fallback model answers, keep using it this long before trying the primary again.
+PREFER_FALLBACK_SECONDS = 300
 
 
 class AiError(Exception):
@@ -29,6 +32,12 @@ class AiUnavailable(AiError):
     """Not configured, timed out, rate-limited or a provider error."""
 
     code = "ai_unavailable"
+
+
+class AiBusy(AiUnavailable):
+    """Every configured model is overloaded or rate-limited right now; worth retrying later."""
+
+    code = "ai_busy"
 
 
 class AiInvalidOutput(AiError):
@@ -126,11 +135,16 @@ class DisabledAiClient:
 class GeminiClient:
     enabled = True
 
-    def __init__(self, api_key: str, model: str) -> None:
+    def __init__(self, api_key: str, model: str, fallback_models: tuple[str, ...] = ()) -> None:
         from google import genai
         from google.genai import types
 
+        # Recorded with stored analyses. The model that actually answered may be a fallback.
         self.model = model
+        self._models = tuple(dict.fromkeys((model, *fallback_models)))
+        self._retired: set[str] = set()
+        self._preferred: tuple[str, float] | None = None
+        self.last_model: str | None = None  # the model that answered most recently
         self._types = types
         self._client = genai.Client(
             api_key=api_key, http_options=types.HttpOptions(timeout=TIMEOUT_SECONDS * 1000)
@@ -158,28 +172,59 @@ class GeminiClient:
         cfg = self._types.GenerateContentConfig(
             system_instruction=system, temperature=0.1, **config
         )
+        failure: Exception | None = None
         for attempt in range(1, MAX_ATTEMPTS + 1):
-            try:
-                return await asyncio.wait_for(
-                    self._client.aio.models.generate_content(
-                        model=self.model, contents=contents, config=cfg
-                    ),
-                    timeout=TIMEOUT_SECONDS,
-                )
-            except (TimeoutError, errors.ServerError) as exc:
-                retryable = True
-                failure: Exception = exc
-            except errors.ClientError as exc:
-                # 429 is worth retrying; other 4xx (bad key, bad request) are not.
-                retryable = getattr(exc, "code", None) == 429
-                failure = exc
-            if not retryable or attempt == MAX_ATTEMPTS:
-                # Log the class and status only — provider messages can echo the request.
-                logger.warning("Gemini call failed", extra={"error": type(failure).__name__,
-                                                            "status": getattr(failure, "code", None)})  # fmt: skip
-                raise AiUnavailable("AI request failed") from failure
-            await asyncio.sleep(0.5 * 2**attempt)
-        raise AiUnavailable("AI request failed")  # pragma: no cover
+            for model in self._order():
+                try:
+                    response = await asyncio.wait_for(
+                        self._client.aio.models.generate_content(
+                            model=model, contents=contents, config=cfg
+                        ),
+                        timeout=TIMEOUT_SECONDS,
+                    )
+                except (TimeoutError, errors.ServerError) as exc:
+                    failure = exc  # overloaded or slow: try the next model
+                except errors.ClientError as exc:
+                    failure = exc
+                    status = getattr(exc, "code", None)
+                    if status == 404:
+                        # Retired or unknown model name: a configuration problem, not a blip.
+                        self._retired.add(model)
+                        logger.error("Gemini model not available; check GEMINI_MODEL / GEMINI_FALLBACK_MODELS",
+                                     extra={"model": model, "status": status})  # fmt: skip
+                    elif status != 429:
+                        # Bad key or bad request: retrying or switching models will not help.
+                        self._log_failure(model, exc)
+                        raise AiUnavailable("AI request failed") from exc
+                else:
+                    self._remember(model)
+                    return response
+                self._log_failure(model, failure)
+            if not self._order():
+                raise AiUnavailable("No configured Gemini model is available") from failure
+            if attempt < MAX_ATTEMPTS:
+                await asyncio.sleep(0.5 * 2**attempt)
+        raise AiBusy("AI is busy") from failure
+
+    def _order(self) -> list[str]:
+        """Models to try, the recently successful fallback first; retired names are skipped."""
+        available = [m for m in self._models if m not in self._retired]
+        if self._preferred and time.monotonic() - self._preferred[1] < PREFER_FALLBACK_SECONDS:
+            preferred = self._preferred[0]
+            if preferred in available:
+                available.remove(preferred)
+                available.insert(0, preferred)
+        return available
+
+    def _remember(self, model: str) -> None:
+        self.last_model = model
+        self._preferred = None if model == self._models[0] else (model, time.monotonic())
+
+    @staticmethod
+    def _log_failure(model: str, failure: Exception | None) -> None:
+        # The class and status only: provider messages can echo the request.
+        logger.warning("Gemini call failed", extra={"model": model, "error": type(failure).__name__,
+                                                    "status": getattr(failure, "code", None)})  # fmt: skip
 
     async def generate_json(self, *, system: str, parts: list[Part], schema: type[T]) -> T:
         text = await self._generate(
@@ -252,5 +297,7 @@ class GeminiClient:
         return ModelTurn(text=text, raw=content)
 
 
-def create_ai_client(api_key: str | None, model: str) -> AiClient:
-    return GeminiClient(api_key, model) if api_key else DisabledAiClient()
+def create_ai_client(
+    api_key: str | None, model: str, fallback_models: tuple[str, ...] = ()
+) -> AiClient:
+    return GeminiClient(api_key, model, fallback_models) if api_key else DisabledAiClient()

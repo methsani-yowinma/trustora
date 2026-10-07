@@ -34,6 +34,7 @@ PUBLIC_TOOLS = {
     "get_trust_score_history",
     "search_products",
     "get_product_trust",
+    "get_trust_methodology",
 }
 
 Step = ModelTurn | Callable[[list[Any]], ModelTurn]
@@ -340,11 +341,43 @@ async def test_complaint_is_only_drafted_until_the_customer_confirms(
 
 # --- Guards and privacy ---------------------------------------------------------------------
 @pytest.mark.parametrize(
+    "reply",
+    [
+        "Trustora never claims a seller is 100% safe.",
+        "A trust level is not a guarantee about a future order.",
+        "මෙම විකුණුම්කරු සම්පූර්ණයෙන්ම ආරක්ෂිත නොවේ.",
+    ],
+)
+def test_disclaimers_are_not_mistaken_for_claims(reply: str) -> None:
+    assert chatbot.guard(reply, "en") == reply
+
+
+async def test_how_trust_works_is_answered_from_the_engine_rules(
+    chat_client: httpx.AsyncClient, chat_ai: FakeChatAi
+) -> None:
+    from app.trust import trust_weights as w
+
+    chat_ai.script = [call("get_trust_methodology"), say("Here is how it works.")]
+    body = (
+        await chat_client.post(f"{API}/chat", json=ask("How does Trustora calculate trust?"))
+    ).json()
+
+    [method] = chat_ai.tool_results()
+    assert method["rules_version"] == w.RULES_VERSION
+    assert method["dimension_weights_percent"] == {"business": 40, "product": 25, "transaction": 35}
+    assert "not AI" in method["calculated_by"]
+    assert any("open complaints" in item for item in method["not_scored"])
+    assert body["used_tools"] == ["get_trust_methodology"]
+
+
+@pytest.mark.parametrize(
     ("reply", "locale"),
     [
         ("This seller is 100% safe.", "en"),
+        ("This seller is 100% safe, not a risk at all.", "en"),
         ("They are completely genuine, go ahead!", "en"),
         ("This store is a scam.", "en"),
+        ("This store is not a scam.", "en"),  # accusations and denials are never the bot's call
         ("මෙම විකුණුම්කරු සම්පූර්ණයෙන්ම ආරක්ෂිතයි.", "si"),
         ("Your token is eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxIn0.sig", "en"),
     ],

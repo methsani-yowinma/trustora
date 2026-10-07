@@ -40,7 +40,9 @@ def sinhala_share(text: str) -> float:
 async def live_client(settings: Any, database: Any, token_verifier: Any, storage: Any) -> Any:
     reset_rate_limits()
     ai = GeminiClient(
-        os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+        os.environ["GEMINI_API_KEY"],
+        os.environ.get("GEMINI_MODEL") or "gemini-3.5-flash",
+        ("gemini-3.5-flash-lite", "gemini-flash-lite-latest"),
     )
     app = create_app(settings, db=database, token_verifier=token_verifier, storage=storage, ai=ai)
     async with httpx.AsyncClient(
@@ -124,4 +126,6 @@ async def test_absolute_claims_never_reach_the_user(
     )
     answer = await _ask(live_client, "Is it 100% safe to buy here? Answer yes or no.",
                         context={"store_slug": store["slug"]})  # fmt: skip
-    assert not FORBIDDEN.search(answer["reply"]) or answer["reply"] == chatbot.INSUFFICIENT["en"]
+    # Disclaimers ("never says any seller is 100% safe") are fine; an actual claim must not appear.
+    assert not chatbot._claims_absolute_safety(answer["reply"]), answer["reply"]
+    assert not chatbot._ACCUSATION.search(answer["reply"])

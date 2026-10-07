@@ -4,6 +4,11 @@ from typing import Literal
 from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Gemini models change: older ones are retired (gemini-2.5-* is no longer offered to new keys) and
+# busy ones return 503. The primary is tried first, then each fallback.
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
+DEFAULT_GEMINI_FALLBACKS = "gemini-3.5-flash-lite,gemini-flash-lite-latest"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -20,12 +25,24 @@ class Settings(BaseSettings):
 
     gemini_api_key: SecretStr | None = None
     # Override when Google retires or renames the default model.
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = DEFAULT_GEMINI_MODEL
+    # Comma-separated; tried in order when the primary model is overloaded or retired.
+    gemini_fallback_models: str = DEFAULT_GEMINI_FALLBACKS
 
     @field_validator("gemini_model", mode="before")
     @classmethod
     def _default_model(cls, value: object) -> object:
-        return value or "gemini-2.5-flash"
+        return value or DEFAULT_GEMINI_MODEL
+
+    @field_validator("gemini_fallback_models", mode="before")
+    @classmethod
+    def _default_fallbacks(cls, value: object) -> object:
+        return DEFAULT_GEMINI_FALLBACKS if value is None or value == "" else value
+
+    @property
+    def gemini_fallback_list(self) -> tuple[str, ...]:
+        names = (n.strip() for n in self.gemini_fallback_models.split(","))
+        return tuple(n for n in names if n and n.lower() != "none")
 
     @field_validator(
         "gemini_api_key", "supabase_service_role_key", "supabase_jwt_secret", mode="before"
