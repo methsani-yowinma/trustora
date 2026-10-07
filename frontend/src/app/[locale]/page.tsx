@@ -1,6 +1,7 @@
 import { BadgeCheck, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import Image from "next/image";
 import { use } from "react";
 
 import { buttonClasses } from "@/components/ui/Button";
@@ -22,23 +23,42 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
 
   return (
     <div className="space-y-16 py-12 sm:py-20">
-      <section className="max-w-3xl space-y-6">
-        <p className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700">
-          <ShieldCheck aria-hidden="true" className="h-4 w-4" />
-          {t("eyebrow")}
-        </p>
-        <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">{t("title")}</h1>
-        <p className="text-lg text-ink-muted">{t("body")}</p>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/discover" className={buttonClasses("primary")}>
-            {tNav("discover")}
-          </Link>
-          <Link href={{ pathname: "/signup", query: { type: "customer" } }} className={buttonClasses("secondary")}>
-            {t("ctaCustomer")}
-          </Link>
-          <Link href={{ pathname: "/signup", query: { type: "sme" } }} className={buttonClasses("secondary")}>
-            {t("ctaSme")}
-          </Link>
+      <section className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="max-w-3xl space-y-6">
+          <p className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700">
+            <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+            {t("eyebrow")}
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">{t("title")}</h1>
+          <p className="text-lg text-ink-muted">{t("body")}</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/discover" className={buttonClasses("primary")}>
+              {tNav("discover")}
+            </Link>
+            <Link href={{ pathname: "/signup", query: { type: "customer" } }} className={buttonClasses("secondary")}>
+              {t("ctaCustomer")}
+            </Link>
+            <Link href={{ pathname: "/signup", query: { type: "sme" } }} className={buttonClasses("secondary")}>
+              {t("ctaSme")}
+            </Link>
+          </div>
+        </div>
+
+        {/* Trustora AI mascot. A soft brand glow sits behind the transparent image. */}
+        <div className="relative mx-auto w-full max-w-[15rem] sm:max-w-[18rem] lg:max-w-none">
+          <div
+            aria-hidden="true"
+            className="absolute inset-[12%] -z-10 rounded-full bg-brand-100 blur-3xl"
+          />
+          <Image
+            src="/images/trustora-ai-robot.png"
+            alt={t("robotAlt")}
+            width={1275}
+            height={1234}
+            priority
+            sizes="(min-width: 1024px) 24rem, (min-width: 640px) 18rem, 15rem"
+            className="h-auto w-full motion-safe:animate-robot-float"
+          />
         </div>
       </section>
 
