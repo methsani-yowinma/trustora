@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/* Trustora design tokens: Trust + Technology + Commerce. Light theme for the MVP. */
+@theme {
+  --font-sans: var(--font-inter), var(--font-sinhala), ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #f7f9fb;
+  --color-surface: #ffffff;
+  --color-ink: #0b1f33;
+  --color-ink-muted: #4a5b6d;
+  --color-line: #dde4ec;
+
+  --color-brand-50: #ecfbf6;
+  --color-brand-100: #d0f4e8;
+  --color-brand-500: #12a37f;
+  --color-brand-600: #0b8a6b;
+  --color-brand-700: #0a6f57;
+  --color-brand-900: #063d31;
+
+  /* Trust states (used from Phase 4). Never rely on colour alone — always pair with text/icon. */
+  --color-trust-verified: #0a6f57;
+  --color-trust-trusted: #1565c0;
+  --color-trust-developing: #6b5bd6;
+  --color-trust-caution: #b45309;
+  --color-trust-risk: #b42318;
+
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px rgb(11 31 51 / 0.04), 0 4px 16px rgb(11 31 51 / 0.06);
+
+  /* Trustora AI launcher: a brief, occasional sparkle (disabled with reduced motion, below). */
+  --animate-ai-twinkle: ai-twinkle 4s ease-in-out infinite;
+
+  @keyframes ai-twinkle {
+    0%,
+    76%,
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+    84% {
+      opacity: 0.5;
+      transform: scale(0.6) rotate(45deg);
+    }
+    92% {
+      opacity: 1;
+      transform: scale(1.15) rotate(90deg);
+    }
+  }
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* Sinhala script needs more vertical room for vowel signs above and below the baseline. */
+:lang(si) body {
+  line-height: 1.7;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+/* The chat input shows focus on its wrapper (focus-within ring) instead. */
+[data-chat-input]:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
