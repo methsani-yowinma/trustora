@@ -56,6 +56,7 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
             width={1275}
             height={1234}
             priority
+            unoptimized
             sizes="(min-width: 1024px) 24rem, (min-width: 640px) 18rem, 15rem"
             className="h-auto w-full motion-safe:animate-robot-float"
           />
