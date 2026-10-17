@@ -3,20 +3,12 @@
   "services": {
     "frontend": {
       "root": "frontend/",
-      "framework": "nextjs",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "backend",
-          "format": "url",
-          "env": "BACKEND_URL"
-        }
-      ]
+      "framework": "nextjs"
     },
     "backend": {
       "root": "backend/",
       "framework": "fastapi",
-      "entrypoint": "app.main:create_app"
+      "entrypoint": "app.main:app"
     }
   },
   "rewrites": [
